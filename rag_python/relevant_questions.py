@@ -83,7 +83,7 @@ QUESTION_RULES: List[QuestionRule] = [
 
 
 def generate_relevant_questions(
-    user_query: string,
+    user_query: str,
     retrieved_chunks: List[RetrievedChunk],
     video_id: Optional[str] = None,
 ) -> List[str]:

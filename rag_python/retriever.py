@@ -31,7 +31,7 @@ class RetrievalResult:
 
 @dataclass
 class RetrievalQuery:
-    question: string = ""
+    question: str = ""
     video_id: Optional[str] = None
     top_k: int = 3
     min_score_threshold: float = 0.20

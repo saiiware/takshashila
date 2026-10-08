@@ -26,9 +26,9 @@ const statusConfig: Record<
     isInteractive: true,
   },
   locked: {
-    badge: "Locked",
-    badgeClass: "bg-ink/5 text-ink/40 border border-ink/10",
-    isInteractive: false,
+    badge: "Ready",
+    badgeClass: "bg-workshop-50 text-workshop-700 border border-workshop-200",
+    isInteractive: true,
   },
 };
 

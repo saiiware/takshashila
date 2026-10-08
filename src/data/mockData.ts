@@ -24,46 +24,22 @@ const videoTitles: Array<{ title: string; description: string; minutes: number }
     minutes: 12,
   },
   {
-    title: "Mastering Basic Rows & Stitch Tension",
+    title: "Lesson 4: The Knit Stitch — Technique & Foundation",
     description:
-      "Building steady rhythm, maintaining even stitch tension, and avoiding tight pulling to produce neat, durable fabric.",
+      "Master the fundamental knit stitch: inserting the right needle, wrapping working yarn, pulling through to form smooth V-shaped stitches, and creating foundation fabrics for scarves, blankets, and sweaters.",
     minutes: 9,
   },
   {
-    title: "Knitting Your First Scarf Project",
+    title: "Lesson 5: The Purl Stitch — Texture, Ribbing & Technique",
     description:
-      "Applying slip knots and row-by-row loops to complete a cozy scarf from start to finish.",
-    minutes: 14,
-  },
-  {
-    title: "Shaping Caps and Small Accessories",
-    description:
-      "Using different needle sizes and yarn thicknesses to knit practical winter caps and pouches.",
-    minutes: 11,
-  },
-  {
-    title: "Working with Colors, Textures & Patterns",
-    description:
-      "Combining wool and cotton textures, introducing color changes, and creating decorative motifs.",
-    minutes: 13,
-  },
-  {
-    title: "Finishing Edges & Using Yarn Needles",
-    description:
-      "Neat edge finishing, binding off loops, and using yarn needles to assemble pieces seamlessly.",
+      "Learn the purl stitch with yarn in front: opposite needle entry, wave bump textures, and combining knit and purl stitches for ribbed cuffs, borders, and decorative designs.",
     minutes: 10,
   },
   {
-    title: "Care, Washing & Durability of Knitted Items",
+    title: "Lesson 6: Casting On — Creating the Foundation Row",
     description:
-      "Proper washing, drying, and maintenance techniques for wool and cotton knitted products.",
-    minutes: 8,
-  },
-  {
-    title: "Presenting, Showcasing & Selling Your Creations",
-    description:
-      "Photographing products for social media, setting up exhibition displays, storytelling, and pricing handmade knitted goods.",
-    minutes: 15,
+      "Step-by-step casting on after making a slip knot: building initial loops onto the needle, maintaining consistent tension, and preparing the foundation row for your project.",
+    minutes: 11,
   },
 ];
 
@@ -82,7 +58,19 @@ const thumbnailColors = [
 
 export const COURSE_ID = "course-knitting-craft";
 
-const videos: Video[] = videoTitles.map((v, index) => ({
+const demoVideo: Video = {
+  id: `${COURSE_ID}-video-0`,
+  courseId: COURSE_ID,
+  order: 0,
+  title: "Demo Lesson: Center Panel Stitching & Crochet Hook Technique",
+  description:
+    "Live demonstration by e-Saheli: measuring thread with 1 to 1.5 inches extra, identifying braided ridge front vs soft inside, and weaving running stitches at half-inch intervals with a crochet needle.",
+  durationMinutes: 3,
+  thumbnailColor: "#1F4B4A",
+  videoUrl: "/videos/demo.mp4",
+};
+
+const standardVideos: Video[] = videoTitles.map((v, index) => ({
   id: `${COURSE_ID}-video-${index + 1}`,
   courseId: COURSE_ID,
   order: index + 1,
@@ -92,6 +80,8 @@ const videos: Video[] = videoTitles.map((v, index) => ({
   thumbnailColor: thumbnailColors[index % thumbnailColors.length],
   videoUrl: "",
 }));
+
+const videos: Video[] = [demoVideo, ...standardVideos];
 
 export const MOCK_COURSE: Course = {
   id: COURSE_ID,

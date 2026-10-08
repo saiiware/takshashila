@@ -17,6 +17,15 @@ class QuestionRule:
 
 QUESTION_RULES: List[QuestionRule] = [
     QuestionRule(
+        trigger_terms=["panel", "crochet", "hook", "center", "running", "braid", "front", "back", "extra", "esahli"],
+        suggested_questions=[
+            "How much extra thread should I leave when measuring the center panel?",
+            "Which side of the knitted piece is used as the front side?",
+            "What interval should I keep between running stitches?",
+            "What tool is used to stitch the center panel in the demo lecture?",
+        ],
+    ),
+    QuestionRule(
         trigger_terms=["slip", "knot", "first", "start", "begin", "loop"],
         suggested_questions=[
             "How do I insert the second needle into the slip knot loop?",

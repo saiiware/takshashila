@@ -30,17 +30,15 @@ export default function CoursePage() {
   const currentLearningVideo = MOCK_COURSE.videos.find((v) => v.id === targetVideoId) ?? activeVideo;
 
   const getStatus = (index: number) => {
-    if (!isEnrolled) return "locked" as const;
     if (enrollment?.videoProgress[MOCK_COURSE.videos[index].id]?.completed) return "completed" as const;
     if (index === activeVideoIndex) return "current" as const;
-    if (index < activeVideoIndex || activeVideoIndex === -1) return "upcoming" as const;
-    return "locked" as const;
+    return "upcoming" as const;
   };
 
-  // Group curriculum into 3 logical modules
-  const module1Videos = MOCK_COURSE.videos.slice(0, 3); // Lessons 1-3
-  const module2Videos = MOCK_COURSE.videos.slice(3, 6); // Lessons 4-6
-  const module3Videos = MOCK_COURSE.videos.slice(6, 10); // Lessons 7-10
+  // Demo video is video 0; standard lessons are 1-6
+  const demoVideoItem = MOCK_COURSE.videos[0];
+  const module1Videos = MOCK_COURSE.videos.slice(1, 4); // Lessons 1-3
+  const module2Videos = MOCK_COURSE.videos.slice(4, 7); // Lessons 4-6
 
   return (
     <div className="space-y-8">
@@ -52,7 +50,7 @@ export default function CoursePage() {
               Official Craft Curriculum
             </span>
             <span className="rounded-full bg-turmeric-400 text-workshop-900 px-3 py-1 text-xs font-extrabold">
-              10 Video Lessons
+              Demo Lecture + 6 Lessons
             </span>
           </div>
 
@@ -66,7 +64,7 @@ export default function CoursePage() {
 
           <div className="flex flex-wrap items-center gap-4 text-xs md:text-sm text-white/80">
             <span className="flex items-center gap-1.5 font-medium">
-              <span>⏱️</span> ~1 hr 45 min total
+              <span>⏱️</span> ~1 hr total
             </span>
             <span className="flex items-center gap-1.5 font-medium">
               <span>🧶</span> Hands-on projects
@@ -99,7 +97,7 @@ export default function CoursePage() {
               </h2>
 
               <p className="text-sm text-ink/70">
-                Lesson {currentLearningVideo.order} of {MOCK_COURSE.totalVideos} • {currentLearningVideo.durationMinutes} min
+                {currentLearningVideo.order === 0 ? "Featured Demo Video" : `Lesson ${currentLearningVideo.order}`} • {currentLearningVideo.durationMinutes} min
               </p>
 
               <div className="pt-2 max-w-md">
@@ -128,7 +126,7 @@ export default function CoursePage() {
             <div>
               <h2 className="text-xl font-bold text-ink">Ready to start knitting?</h2>
               <p className="mt-1 text-sm text-ink/70">
-                Enroll for free to unlock all 10 video lessons, track your stitch count, and get instant AI photo feedback on your slip knot and yarns.
+                Enroll for free to unlock the demo video and all 6 video lessons, track your stitch count, and get instant AI photo feedback on your slip knot and yarns.
               </p>
             </div>
             <Button onClick={handleRegister} disabled={isEnrolling} className="shrink-0">
@@ -147,8 +145,26 @@ export default function CoursePage() {
           </p>
         </div>
 
+        {/* Featured Demo Video Section */}
+        {demoVideoItem && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between border-b border-line pb-2">
+              <div className="flex items-center gap-2">
+                <span className="flex h-6 w-6 items-center justify-center rounded-md bg-turmeric-500 text-workshop-900 font-extrabold text-xs">
+                  ★
+                </span>
+                <h3 className="text-lg font-bold text-ink">Featured Demo Lecture (Before Lesson 1)</h3>
+              </div>
+              <span className="text-xs bg-turmeric-100 text-turmeric-800 font-bold px-2.5 py-0.5 rounded-full">
+                Video Player + Timestamps
+              </span>
+            </div>
+            <VideoListItem video={demoVideoItem} status={getStatus(0)} />
+          </div>
+        )}
+
         {/* Module 1 */}
-        <div className="space-y-3">
+        <div className="space-y-3 pt-2">
           <div className="flex items-center gap-2 border-b border-line pb-2">
             <span className="flex h-6 w-6 items-center justify-center rounded-md bg-workshop-600 text-white font-extrabold text-xs">
               1
@@ -158,7 +174,7 @@ export default function CoursePage() {
           </div>
           <div className="space-y-2">
             {module1Videos.map((video, idx) => (
-              <VideoListItem key={video.id} video={video} status={getStatus(idx)} />
+              <VideoListItem key={video.id} video={video} status={getStatus(1 + idx)} />
             ))}
           </div>
         </div>
@@ -169,28 +185,12 @@ export default function CoursePage() {
             <span className="flex h-6 w-6 items-center justify-center rounded-md bg-workshop-600 text-white font-extrabold text-xs">
               2
             </span>
-            <h3 className="text-lg font-bold text-ink">Module 2: Core Technique & Project Execution</h3>
+            <h3 className="text-lg font-bold text-ink">Module 2: Core Stitches & Foundation</h3>
             <span className="text-xs text-ink/50">(Lessons 4 - 6)</span>
           </div>
           <div className="space-y-2">
             {module2Videos.map((video, idx) => (
-              <VideoListItem key={video.id} video={video} status={getStatus(3 + idx)} />
-            ))}
-          </div>
-        </div>
-
-        {/* Module 3 */}
-        <div className="space-y-3 pt-2">
-          <div className="flex items-center gap-2 border-b border-line pb-2">
-            <span className="flex h-6 w-6 items-center justify-center rounded-md bg-workshop-600 text-white font-extrabold text-xs">
-              3
-            </span>
-            <h3 className="text-lg font-bold text-ink">Module 3: Advanced Finishing & Exhibition Showcase</h3>
-            <span className="text-xs text-ink/50">(Lessons 7 - 10)</span>
-          </div>
-          <div className="space-y-2">
-            {module3Videos.map((video, idx) => (
-              <VideoListItem key={video.id} video={video} status={getStatus(6 + idx)} />
+              <VideoListItem key={video.id} video={video} status={getStatus(4 + idx)} />
             ))}
           </div>
         </div>

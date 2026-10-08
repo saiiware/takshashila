@@ -295,6 +295,9 @@ function fallbackClientVisionAnalysis(fileName: string, prompt: string): VisionA
 export async function transcribeSpeech(videoId?: string | null): Promise<string> {
   await delay(500);
 
+  if (videoId?.includes("0")) {
+    return "How much extra thread should I leave when measuring the center panel?";
+  }
   if (videoId?.includes("3")) {
     return "How do I make a slip knot and first loop with the needles?";
   }

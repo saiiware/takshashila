@@ -95,8 +95,12 @@ export default function VideoPage() {
             style={{ backgroundColor: video.thumbnailColor }}
           >
             <div className="text-center">
-              <p className="text-5xl">▶️</p>
-              <p className="mt-2 text-lg font-medium">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-white/20 backdrop-blur-xs">
+                <svg className="h-7 w-7 translate-x-0.5 fill-current text-white" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </div>
+              <p className="mt-3 text-lg font-medium">
                 {video.order === 0 ? "Demo Lesson" : `Lesson ${video.order}`} of {MOCK_COURSE.totalVideos - 1}
               </p>
             </div>
@@ -108,7 +112,7 @@ export default function VideoPage() {
           <div className="rounded-card border border-workshop-200 bg-workshop-50/70 p-4 space-y-2.5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold uppercase tracking-wider text-workshop-800 flex items-center gap-1.5">
-                <span>⏱️</span> Interactive Video Timestamps:
+                Interactive Video Timestamps:
               </span>
               <span className="text-[11px] text-ink/60">Click any timestamp to seek</span>
             </div>
@@ -138,7 +142,7 @@ export default function VideoPage() {
             <span className="text-xs font-bold uppercase tracking-wider text-workshop-600">
               {video.order === 0 ? "Featured Demo Lecture" : `Lesson ${video.order}`}
             </span>
-            <span className="text-xs text-ink/50 font-medium">⏱️ {video.durationMinutes} min</span>
+            <span className="text-xs text-ink/50 font-medium">{video.durationMinutes} min</span>
           </div>
 
           <h1 className="text-2xl font-bold text-ink">{video.title}</h1>

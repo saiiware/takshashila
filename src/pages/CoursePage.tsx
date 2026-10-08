@@ -64,13 +64,13 @@ export default function CoursePage() {
 
           <div className="flex flex-wrap items-center gap-4 text-xs md:text-sm text-white/80">
             <span className="flex items-center gap-1.5 font-medium">
-              <span>⏱️</span> ~1 hr total
+              ~1 hr total
             </span>
             <span className="flex items-center gap-1.5 font-medium">
-              <span>🧶</span> Hands-on projects
+              Hands-on projects
             </span>
             <span className="flex items-center gap-1.5 font-medium">
-              <span>🤖</span> AI tutor & photo feedback
+              AI tutor & photo feedback
             </span>
           </div>
         </div>
@@ -111,10 +111,7 @@ export default function CoursePage() {
             <div className="shrink-0 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <Link to={`/course/video/${currentLearningVideo.id}`}>
                 <Button className="w-full sm:w-auto shadow-md text-base px-6 py-3">
-                  <span className="flex items-center gap-2">
-                    <span>Resume Lesson</span>
-                    <span>▶</span>
-                  </span>
+                  Resume Lesson
                 </Button>
               </Link>
             </div>
@@ -151,13 +148,10 @@ export default function CoursePage() {
             <div className="flex items-center justify-between border-b border-line pb-2">
               <div className="flex items-center gap-2">
                 <span className="flex h-6 w-6 items-center justify-center rounded-md bg-turmeric-500 text-workshop-900 font-extrabold text-xs">
-                  ★
+                  0
                 </span>
                 <h3 className="text-lg font-bold text-ink">Featured Demo Lecture (Before Lesson 1)</h3>
               </div>
-              <span className="text-xs bg-turmeric-100 text-turmeric-800 font-bold px-2.5 py-0.5 rounded-full">
-                Video Player + Timestamps
-              </span>
             </div>
             <VideoListItem video={demoVideoItem} status={getStatus(0)} />
           </div>

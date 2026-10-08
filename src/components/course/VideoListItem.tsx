@@ -21,13 +21,13 @@ const statusConfig: Record<
     isInteractive: true,
   },
   upcoming: {
-    badge: "Ready",
-    badgeClass: "bg-workshop-50 text-workshop-700 border border-workshop-200",
+    badge: "",
+    badgeClass: "",
     isInteractive: true,
   },
   locked: {
-    badge: "Ready",
-    badgeClass: "bg-workshop-50 text-workshop-700 border border-workshop-200",
+    badge: "",
+    badgeClass: "",
     isInteractive: true,
   },
 };
@@ -100,9 +100,11 @@ export default function VideoListItem({ video, status }: VideoListItemProps) {
 
       {/* Status Badge & Action */}
       <div className="flex shrink-0 items-center gap-2">
-        <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${badgeClass}`}>
-          {badge}
-        </span>
+        {badge && (
+          <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${badgeClass}`}>
+            {badge}
+          </span>
+        )}
         {isInteractive && (
           <span className="hidden sm:inline-flex text-workshop-500 text-sm font-semibold group-hover:translate-x-1 transition-transform">
             →

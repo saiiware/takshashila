@@ -98,7 +98,7 @@ function fallbackClientVisionAnalysis(fileName: string, prompt: string): VisionA
     return {
       category: "slip_knot",
       status: "needs_improvement",
-      title: "Slip Knot: Loop Pulled Too Tightly ⚠️",
+      title: "Slip Knot: Loop Pulled Too Tightly",
       score: 5.0,
       detected_items: ["Choked slip knot loop", "Knitting needle", "High tension"],
       feedback:
@@ -122,7 +122,7 @@ function fallbackClientVisionAnalysis(fileName: string, prompt: string): VisionA
     return {
       category: "slip_knot",
       status: "needs_improvement",
-      title: "Slip Knot: Loop Too Loose ⚠️",
+      title: "Slip Knot: Loop Too Loose",
       score: 5.5,
       detected_items: ["Oversized slip knot loop", "Loose loop base", "Knitting needle"],
       feedback:
@@ -146,7 +146,7 @@ function fallbackClientVisionAnalysis(fileName: string, prompt: string): VisionA
     return {
       category: "slip_knot",
       status: "correct",
-      title: "Slip Knot: Correct & Balanced Tension ✅",
+      title: "Slip Knot: Correct & Balanced Tension",
       score: 9.5,
       detected_items: ["Well-formed slip knot", "Balanced loop tension", "Knitting needle shaft"],
       feedback:
@@ -171,7 +171,7 @@ function fallbackClientVisionAnalysis(fileName: string, prompt: string): VisionA
     return {
       category: "yarn",
       status: "correct",
-      title: "Yarn Identified: Wool Yarn (Winter & Sweaters) 🧶",
+      title: "Yarn Identified: Wool Yarn (Winter & Sweaters)",
       score: 9.0,
       detected_items: ["Wool yarn ball", "Crimp/warm texture", "Winter knit gauge"],
       feedback:
@@ -195,7 +195,7 @@ function fallbackClientVisionAnalysis(fileName: string, prompt: string): VisionA
     return {
       category: "yarn",
       status: "correct",
-      title: "Yarn Identified: Cotton Yarn (Light & Breathable) 🧵",
+      title: "Yarn Identified: Cotton Yarn (Light & Breathable)",
       score: 9.0,
       detected_items: ["Cotton yarn skein", "Smooth plant fiber", "Compact strand"],
       feedback:
@@ -220,7 +220,7 @@ function fallbackClientVisionAnalysis(fileName: string, prompt: string): VisionA
     return {
       category: "needle",
       status: "correct",
-      title: "Needles Identified: Metal Needles 🥢",
+      title: "Needles Identified: Metal Needles",
       score: 9.0,
       detected_items: ["Metal needles", "Smooth metallic finish", "Tapered point tips"],
       feedback:
@@ -244,7 +244,7 @@ function fallbackClientVisionAnalysis(fileName: string, prompt: string): VisionA
     return {
       category: "needle",
       status: "correct",
-      title: "Needles Identified: Wooden / Bamboo Needles 🥢",
+      title: "Needles Identified: Wooden / Bamboo Needles",
       score: 9.0,
       detected_items: ["Wooden needles", "Natural wood grain", "Gentle grip surface"],
       feedback:
@@ -268,7 +268,7 @@ function fallbackClientVisionAnalysis(fileName: string, prompt: string): VisionA
   return {
     category: "general",
     status: "correct",
-    title: "Knitting Work Inspection ✅",
+    title: "Knitting Work Inspection",
     score: 8.5,
     detected_items: ["Knitting craftwork", "Fiber / needle elements"],
     feedback:

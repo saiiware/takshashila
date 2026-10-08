@@ -33,7 +33,7 @@ export default function AIAssistantPage() {
               : "bg-white border border-line text-ink/70 hover:border-workshop-400"
           }`}
         >
-          🌐 Entire Course (All Lessons)
+          Entire Course (All Lessons)
         </button>
         {KNITTING_DOCUMENTS.map((doc) => (
           <button
@@ -46,7 +46,7 @@ export default function AIAssistantPage() {
                 : "bg-white border border-line text-ink/70 hover:border-workshop-400"
             }`}
           >
-            🧶 Lesson {doc.videoOrder} ({doc.sourceFile})
+            Lesson {doc.videoOrder} ({doc.sourceFile})
           </button>
         ))}
       </div>

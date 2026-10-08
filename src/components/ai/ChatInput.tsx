@@ -67,7 +67,7 @@ export default function ChatInput({
             />
             <div className="min-w-0">
               <p className="truncate font-medium text-ink text-xs">{selectedImage.fileName}</p>
-              <p className="text-[11px] text-workshop-700">📷 Photo ready for AI Computer Vision check</p>
+              <p className="text-[11px] text-workshop-700">Photo ready for AI Computer Vision check</p>
             </div>
           </div>
           <button
@@ -82,7 +82,7 @@ export default function ChatInput({
       )}
 
       {/* Input Controls */}
-      <div className="flex items-end gap-2">
+      <div className="flex items-center gap-2">
         <input
           type="file"
           ref={fileInputRef}
@@ -98,9 +98,12 @@ export default function ChatInput({
           onClick={() => fileInputRef.current?.click()}
           title="Upload photo of your knitting (Slip knot, yarn, or needles)"
           aria-label="Upload photo of your knitting"
-          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-line bg-white text-xl text-workshop-600 shadow-2xs transition-colors hover:border-workshop-400 hover:bg-workshop-50 active:scale-95"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-line bg-white text-workshop-600 shadow-2xs transition-colors hover:border-workshop-400 hover:bg-workshop-50 active:scale-95"
         >
-          📷
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
         </button>
 
         <input
@@ -112,34 +115,23 @@ export default function ChatInput({
           }}
           placeholder={selectedImage ? "Add an optional question..." : "Type question or upload photo..."}
           aria-label="Type your question for the AI assistant"
-          className="flex-1 rounded-card border border-line bg-white px-4 py-3 text-base sm:text-lg
-            placeholder:text-ink/40 focus:border-workshop-500"
+          className="min-w-0 flex-1 rounded-xl border border-line bg-white px-3.5 py-2.5 text-sm sm:text-base
+            placeholder:text-ink/40 focus:border-workshop-500 focus:outline-none"
         />
-
-        {/* Voice Input Button */}
-        <button
-          type="button"
-          onClick={onMicPress}
-          aria-label="Ask by voice"
-          aria-pressed={isRecording}
-          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full border text-xl transition-colors ${
-            isRecording
-              ? "border-clay-500 bg-clay-100 text-clay-500"
-              : "border-line bg-white text-workshop-500 hover:border-workshop-400"
-          }`}
-        >
-          🎤
-        </button>
 
         {/* Send Button */}
         <button
           type="button"
           onClick={handleSend}
           disabled={isSending || (!text.trim() && !selectedImage)}
-          className="h-12 shrink-0 rounded-card bg-turmeric-500 px-5 text-base sm:text-lg font-semibold text-workshop-700
-            transition-colors hover:bg-turmeric-600 disabled:cursor-not-allowed disabled:opacity-50 active:scale-95"
+          aria-label="Send message"
+          className="flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-turmeric-500 px-4 text-sm font-bold text-workshop-900 shadow-xs
+            transition-all hover:bg-turmeric-400 disabled:cursor-not-allowed disabled:opacity-40 active:scale-95"
         >
-          Send
+          <span>Send</span>
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+          </svg>
         </button>
       </div>
     </div>

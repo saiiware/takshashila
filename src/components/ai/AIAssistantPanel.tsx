@@ -73,7 +73,7 @@ export default function AIAssistantPanel({
         image.fileName
       );
       setMessages((prev) => [...prev, userMsg]);
-      setStatusMessage("🔍 Analyzing photo with Computer Vision & Lesson knowledge…");
+      setStatusMessage("Analyzing photo with Computer Vision & Lesson knowledge…");
 
       try {
         const assessment = await assessKnittingPhoto(image.dataUrl, image.fileName, promptText);
@@ -122,7 +122,7 @@ export default function AIAssistantPanel({
 
     // Flow 2: Text question -> RAG Knowledge Base Retrieval
     setMessages((prev) => [...prev, makeMessage("user", text, videoId)]);
-    setStatusMessage("🧶 Searching knitting lessons & formulating answer…");
+    setStatusMessage("Searching knitting lessons & formulating answer…");
     try {
       const response = await askAI({
         question: text,
@@ -160,16 +160,12 @@ export default function AIAssistantPanel({
     <div className="flex h-full flex-col">
       <div className="border-b border-line pb-3">
         <div className="flex items-center justify-between">
-          <p className="text-lg font-bold text-ink">🤖 {heading}</p>
-          <span className="inline-flex items-center gap-1 rounded-full bg-workshop-100 px-2 py-0.5 text-[11px] font-medium text-workshop-800">
-            <span className="h-1.5 w-1.5 rounded-full bg-workshop-500 animate-pulse"></span>
-            RAG + Vision Active
-          </span>
+          <p className="text-lg font-bold text-ink">{heading}</p>
         </div>
         <p className="text-sm text-ink/60 mt-0.5">
           {videoTitle
             ? `Grounded in "${videoTitle}" & course texts`
-            : "Grounded in knitting lessons (video1, video2, video3)"}
+            : "Grounded in knitting lessons"}
         </p>
       </div>
 
@@ -177,12 +173,12 @@ export default function AIAssistantPanel({
         {messages.length === 0 && (
           <div className="space-y-3 rounded-card bg-workshop-50/70 p-4 border border-workshop-200">
             <p className="text-sm text-ink/80 leading-relaxed">
-              👋 <strong>Ask questions or upload a photo of your work!</strong> Click 📷 below to send an image of your <strong>slip knot</strong>, <strong>yarn</strong> (wool vs cotton), or <strong>needles</strong> (metal vs wood) for an instant check!
+              <strong>Ask questions or upload a photo of your work!</strong> Use the camera upload below to send an image of your <strong>slip knot</strong>, <strong>yarn</strong> (wool vs cotton), or <strong>needles</strong> (metal vs wood) for an instant check.
             </p>
 
             <div className="pt-1">
               <p className="text-xs font-semibold text-workshop-700 uppercase tracking-wider mb-2">
-                💡 Suggested questions for {videoTitle ? "this lesson" : "beginners"}:
+                Suggested questions for {videoTitle ? "this lesson" : "beginners"}:
               </p>
               <div className="flex flex-col gap-1.5">
                 {starterQuestions.map((q, idx) => (
@@ -193,7 +189,7 @@ export default function AIAssistantPanel({
                     disabled={isSending}
                     className="text-left rounded-lg bg-white border border-workshop-200 hover:border-workshop-400 hover:bg-workshop-100/50 px-3 py-2 text-xs font-medium text-ink/80 transition-all shadow-2xs hover:shadow-xs disabled:opacity-50"
                   >
-                    💬 {q}
+                    {q}
                   </button>
                 ))}
               </div>
@@ -211,7 +207,7 @@ export default function AIAssistantPanel({
 
         {isSending && (
           <div className="flex items-center gap-2 text-sm text-ink/60 pl-2 py-2">
-            <span className="animate-spin text-base">🧶</span>
+            <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-workshop-600 border-t-transparent" />
             <span>{statusMessage || "Processing…"}</span>
           </div>
         )}

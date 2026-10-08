@@ -28,7 +28,7 @@ export default function ChatBubble({ message, onSelectQuestion }: ChatBubbleProp
             />
             {message.imageFileName && (
               <p className={`px-2 py-1 text-xs font-medium ${isUser ? "text-white/80" : "text-ink/60"}`}>
-                📷 {message.imageFileName}
+                Photo: {message.imageFileName}
               </p>
             )}
           </div>
@@ -52,7 +52,7 @@ export default function ChatBubble({ message, onSelectQuestion }: ChatBubbleProp
                       : "bg-amber-100 text-amber-800"
                   }`}
                 >
-                  {assessment.status === "correct" ? "✅ Correct Technique" : "⚠️ Correction Needed"}
+                  {assessment.status === "correct" ? "Correct Technique" : "Correction Needed"}
                 </span>
                 <span className="text-xs font-semibold text-workshop-700 bg-white px-2 py-0.5 rounded-full border border-workshop-200">
                   Score: {assessment.score} / 10
@@ -64,8 +64,8 @@ export default function ChatBubble({ message, onSelectQuestion }: ChatBubbleProp
             </div>
 
             {/* Assessment Title */}
-            <h4 className="text-base font-bold text-ink flex items-center gap-1.5">
-              <span>🔍</span> {assessment.title}
+            <h4 className="text-base font-bold text-ink">
+              {assessment.title}
             </h4>
 
             {/* Detected Elements Tags */}
@@ -86,7 +86,7 @@ export default function ChatBubble({ message, onSelectQuestion }: ChatBubbleProp
             {/* Detailed Observation / Feedback */}
             <div className="rounded-md bg-white p-2.5 border border-workshop-200 text-sm leading-relaxed">
               <p className="font-semibold text-xs text-ink/70 uppercase tracking-wider mb-1">
-                👁️ AI Vision Feedback:
+                AI Vision Feedback:
               </p>
               <p className="text-ink/90">{assessment.feedback}</p>
             </div>
@@ -99,8 +99,8 @@ export default function ChatBubble({ message, onSelectQuestion }: ChatBubbleProp
                   : "bg-amber-50/90 border-amber-300 text-amber-950"
               }`}
             >
-              <p className="font-bold text-xs uppercase tracking-wider mb-1 flex items-center gap-1">
-                <span>💡</span> Recommended Solution & Next Step:
+              <p className="font-bold text-xs uppercase tracking-wider mb-1">
+                Recommended Solution & Next Step:
               </p>
               <p>{assessment.solution}</p>
             </div>
@@ -108,7 +108,7 @@ export default function ChatBubble({ message, onSelectQuestion }: ChatBubbleProp
             {/* Lesson Reference */}
             <div className="flex items-center justify-between text-xs text-workshop-700 pt-1">
               <span className="font-semibold">
-                📖 Grounded in: {assessment.lesson_reference}
+                Grounded in: {assessment.lesson_reference}
               </span>
             </div>
           </div>
@@ -117,8 +117,8 @@ export default function ChatBubble({ message, onSelectQuestion }: ChatBubbleProp
         {/* Source citations for assistant messages */}
         {!isUser && message.sources && message.sources.length > 0 && (
           <div className="mt-3 border-t border-line/60 pt-2">
-            <p className="text-xs font-semibold text-ink/60 mb-1 flex items-center gap-1">
-              <span>📚</span> Sources retrieved from knowledge base:
+            <p className="text-xs font-semibold text-ink/60 mb-1">
+              Sources retrieved from knowledge base:
             </p>
             <div className="flex flex-wrap gap-1.5">
               {message.sources.map((src, i) => (
@@ -127,7 +127,6 @@ export default function ChatBubble({ message, onSelectQuestion }: ChatBubbleProp
                   title={src.snippet}
                   className="inline-flex items-center gap-1 rounded bg-workshop-100/80 px-2 py-0.5 text-xs font-medium text-workshop-800"
                 >
-                  <span className="text-[10px]">📄</span>
                   {src.videoTitle.replace("Lesson ", "L")}
                   <span className="text-[10px] text-workshop-500">
                     ({Math.round(src.score * 100)}% match)
@@ -141,8 +140,8 @@ export default function ChatBubble({ message, onSelectQuestion }: ChatBubbleProp
         {/* Suggested relevant questions */}
         {!isUser && message.relevantQuestions && message.relevantQuestions.length > 0 && (
           <div className="mt-3 border-t border-line/60 pt-2.5">
-            <p className="text-xs font-semibold text-workshop-700 mb-1.5 flex items-center gap-1">
-              <span>💡</span> Relevant questions you can ask next:
+            <p className="text-xs font-semibold text-workshop-700 mb-1.5">
+              Relevant questions you can ask next:
             </p>
             <div className="flex flex-wrap gap-1.5">
               {message.relevantQuestions.map((q, idx) => (

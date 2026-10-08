@@ -66,6 +66,7 @@ export default function VideoPage() {
             >
               {isCompleted ? "✓ Completed" : "Mark as completed"}
             </Button>
+
           </div>
 
           <div className="mt-6 flex items-center justify-between border-t border-line pt-4">

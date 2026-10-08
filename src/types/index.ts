@@ -57,6 +57,19 @@ export interface RAGSource {
   score: number;
 }
 
+export interface VisionAssessment {
+  category: "slip_knot" | "yarn" | "needle" | "general";
+  status: "correct" | "needs_improvement" | "unclear";
+  title: string;
+  score: number;
+  detected_items: string[];
+  feedback: string;
+  solution: string;
+  lesson_reference: string;
+  confidence: number;
+  sources?: RAGSource[];
+}
+
 export interface ChatMessage {
   id: string;
   role: "user" | "assistant";
@@ -66,6 +79,9 @@ export interface ChatMessage {
   sources?: RAGSource[];
   relevantQuestions?: string[];
   confidence?: number;
+  imageUrl?: string;
+  imageFileName?: string;
+  visionAssessment?: VisionAssessment;
 }
 
 // Shapes below describe what each future FastAPI endpoint will accept /

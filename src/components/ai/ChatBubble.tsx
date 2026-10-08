@@ -7,16 +7,112 @@ interface ChatBubbleProps {
 
 export default function ChatBubble({ message, onSelectQuestion }: ChatBubbleProps) {
   const isUser = message.role === "user";
+  const assessment = message.visionAssessment;
 
   return (
     <div className={`flex flex-col ${isUser ? "items-end" : "items-start"}`}>
       <div
-        className={`max-w-[90%] rounded-card px-4 py-3 text-base leading-relaxed ${
-          isUser ? "bg-workshop-500 text-white" : "bg-workshop-50 text-ink border border-workshop-200"
+        className={`max-w-[92%] sm:max-w-[85%] rounded-card px-4 py-3 text-base leading-relaxed ${
+          isUser
+            ? "bg-workshop-500 text-white"
+            : "bg-white text-ink border border-workshop-200 shadow-2xs"
         }`}
       >
-        {/* Message body with basic line break formatting */}
-        <div className="whitespace-pre-line space-y-1">{message.text}</div>
+        {/* User Attached Image */}
+        {message.imageUrl && (
+          <div className="mb-2.5 overflow-hidden rounded-lg border border-white/20 bg-black/10">
+            <img
+              src={message.imageUrl}
+              alt={message.imageFileName || "Uploaded knitting work"}
+              className="max-h-64 w-auto rounded-lg object-contain"
+            />
+            {message.imageFileName && (
+              <p className={`px-2 py-1 text-xs font-medium ${isUser ? "text-white/80" : "text-ink/60"}`}>
+                📷 {message.imageFileName}
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Message body text */}
+        {message.text && (
+          <div className="whitespace-pre-line space-y-1">{message.text}</div>
+        )}
+
+        {/* AI Computer Vision Assessment Card */}
+        {assessment && (
+          <div className="mt-3 rounded-lg border border-workshop-200 bg-workshop-50/70 p-3.5 space-y-2.5 text-ink">
+            {/* Header: Title + Status + Score */}
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-workshop-200/80 pb-2">
+              <div className="flex items-center gap-2">
+                <span
+                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold ${
+                    assessment.status === "correct"
+                      ? "bg-emerald-100 text-emerald-800"
+                      : "bg-amber-100 text-amber-800"
+                  }`}
+                >
+                  {assessment.status === "correct" ? "✅ Correct Technique" : "⚠️ Correction Needed"}
+                </span>
+                <span className="text-xs font-semibold text-workshop-700 bg-white px-2 py-0.5 rounded-full border border-workshop-200">
+                  Score: {assessment.score} / 10
+                </span>
+              </div>
+              <span className="text-xs font-medium text-ink/60">
+                Confidence: {Math.round((assessment.confidence || 0.9) * 100)}%
+              </span>
+            </div>
+
+            {/* Assessment Title */}
+            <h4 className="text-base font-bold text-ink flex items-center gap-1.5">
+              <span>🔍</span> {assessment.title}
+            </h4>
+
+            {/* Detected Elements Tags */}
+            {assessment.detected_items && assessment.detected_items.length > 0 && (
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-xs font-semibold text-ink/60">Detected:</span>
+                {assessment.detected_items.map((item, idx) => (
+                  <span
+                    key={idx}
+                    className="inline-flex items-center rounded-md bg-white border border-workshop-200 px-2 py-0.5 text-xs font-medium text-workshop-800"
+                  >
+                    • {item}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Detailed Observation / Feedback */}
+            <div className="rounded-md bg-white p-2.5 border border-workshop-200 text-sm leading-relaxed">
+              <p className="font-semibold text-xs text-ink/70 uppercase tracking-wider mb-1">
+                👁️ AI Vision Feedback:
+              </p>
+              <p className="text-ink/90">{assessment.feedback}</p>
+            </div>
+
+            {/* Actionable Solution Grounded in Video Lessons */}
+            <div
+              className={`rounded-md p-2.5 border text-sm leading-relaxed ${
+                assessment.status === "correct"
+                  ? "bg-emerald-50/80 border-emerald-200 text-emerald-950"
+                  : "bg-amber-50/90 border-amber-300 text-amber-950"
+              }`}
+            >
+              <p className="font-bold text-xs uppercase tracking-wider mb-1 flex items-center gap-1">
+                <span>💡</span> Recommended Solution & Next Step:
+              </p>
+              <p>{assessment.solution}</p>
+            </div>
+
+            {/* Lesson Reference */}
+            <div className="flex items-center justify-between text-xs text-workshop-700 pt-1">
+              <span className="font-semibold">
+                📖 Grounded in: {assessment.lesson_reference}
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Source citations for assistant messages */}
         {!isUser && message.sources && message.sources.length > 0 && (
@@ -33,7 +129,9 @@ export default function ChatBubble({ message, onSelectQuestion }: ChatBubbleProp
                 >
                   <span className="text-[10px]">📄</span>
                   {src.videoTitle.replace("Lesson ", "L")}
-                  <span className="text-[10px] text-workshop-500">({src.score * 100}% match)</span>
+                  <span className="text-[10px] text-workshop-500">
+                    ({Math.round(src.score * 100)}% match)
+                  </span>
                 </span>
               ))}
             </div>
@@ -64,3 +162,4 @@ export default function ChatBubble({ message, onSelectQuestion }: ChatBubbleProp
     </div>
   );
 }
+

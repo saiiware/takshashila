@@ -39,18 +39,27 @@ export const KnittingVisionGuide: React.FC<Props> = ({ videoUrl }) => {
 
   // 2. Start Camera
   useEffect(() => {
+    let activeStream: MediaStream | null = null;
     async function startCamera() {
       if (!videoRef.current) return;
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { width: 640, height: 480 },
         });
-        videoRef.current.srcObject = stream;
+        activeStream = stream;
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
       } catch (err) {
         setFeedback("Please allow camera access to start practice.");
       }
     }
     startCamera();
+    return () => {
+      if (activeStream) {
+        activeStream.getTracks().forEach((track) => track.stop());
+      }
+    };
   }, []);
 
   // 3. Process Video Frames
@@ -85,8 +94,8 @@ export const KnittingVisionGuide: React.FC<Props> = ({ videoUrl }) => {
             const hand2 = results.landmarks[1];
 
             // Draw landmark circles
-            results.landmarks.forEach((landmarks) => {
-              landmarks.forEach((pt) => {
+            results.landmarks.forEach((handLandmarks: Array<{ x: number; y: number }>) => {
+              handLandmarks.forEach((pt: { x: number; y: number }) => {
                 ctx.beginPath();
                 ctx.arc(pt.x * canvas.width, pt.y * canvas.height, 4, 0, 2 * Math.PI);
                 ctx.fillStyle = "#10b981";

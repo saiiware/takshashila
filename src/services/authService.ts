@@ -57,7 +57,12 @@ export async function login(payload: LoginPayload): Promise<User> {
 
 export function getStoredUser(): User | null {
   const raw = localStorage.getItem(STORAGE_KEY);
-  return raw ? (JSON.parse(raw) as User) : null;
+  if (!raw) return null;
+  const user = JSON.parse(raw) as User;
+  if (user.preferredLanguage !== "en") {
+    user.preferredLanguage = "en";
+  }
+  return user;
 }
 
 export function updateStoredUser(updates: Partial<User>): User | null {

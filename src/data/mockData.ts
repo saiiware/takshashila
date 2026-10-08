@@ -2,8 +2,6 @@ import type { Course, LanguageOption, Video } from "@/types";
 
 export const LANGUAGE_OPTIONS: LanguageOption[] = [
   { code: "en", label: "English", nativeLabel: "English" },
-  { code: "hi", label: "Hindi", nativeLabel: "हिंदी" },
-  { code: "mr", label: "Marathi", nativeLabel: "मराठी" },
 ];
 
 const videoTitles: Array<{ title: string; description: string; minutes: number }> = [

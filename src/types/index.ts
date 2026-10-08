@@ -1,0 +1,158 @@
+// Central type definitions. Keeping these in one place makes it easy to see
+// the exact shape the future FastAPI backend needs to return.
+
+export type Language = "en" | "hi" | "mr";
+
+export interface LanguageOption {
+  code: Language;
+  label: string;
+  nativeLabel: string;
+}
+
+export interface User {
+  id: string;
+  name: string;
+  contact: string; // email or mobile number
+  preferredLanguage: Language;
+}
+
+export interface Video {
+  id: string;
+  courseId: string;
+  order: number;
+  title: string;
+  description: string;
+  durationMinutes: number;
+  thumbnailColor: string; // placeholder in place of a real thumbnail image
+  videoUrl: string; // placeholder source, wired up when backend is ready
+}
+
+export interface Course {
+  id: string;
+  title: string;
+  description: string;
+  organization: string;
+  language: Language;
+  totalVideos: number;
+  videos: Video[];
+}
+
+export interface VideoProgress {
+  videoId: string;
+  completed: boolean;
+  lastPositionSeconds: number;
+}
+
+export interface CourseEnrollment {
+  courseId: string;
+  enrolledOn: string;
+  videoProgress: Record<string, VideoProgress>;
+  lastAccessedVideoId: string | null;
+}
+
+export interface RAGSource {
+  videoId: string;
+  videoTitle: string;
+  snippet: string;
+  score: number;
+}
+
+export interface VisionAssessment {
+  category: "slip_knot" | "yarn" | "needle" | "general";
+  status: "correct" | "needs_improvement" | "unclear";
+  title: string;
+  score: number;
+  detected_items: string[];
+  feedback: string;
+  solution: string;
+  lesson_reference: string;
+  confidence: number;
+  sources?: RAGSource[];
+}
+
+export interface ChatMessage {
+  id: string;
+  role: "user" | "assistant";
+  text: string;
+  createdAt: string;
+  videoContextId?: string | null;
+  sources?: RAGSource[];
+  relevantQuestions?: string[];
+  confidence?: number;
+  imageUrl?: string;
+  imageFileName?: string;
+  visionAssessment?: VisionAssessment;
+}
+
+// Shapes below describe what each future FastAPI endpoint will accept /
+// return. They are not called yet — see src/services for the stubs.
+
+export interface AuthResponse {
+  user: User;
+  token: string;
+}
+
+export interface AskAIRequest {
+  question: string;
+  courseId: string;
+  videoId?: string | null;
+  language: Language;
+}
+
+export interface AskAIResponse {
+  answer: string;
+  answeredAt: string;
+  sources?: RAGSource[];
+  relevantQuestions?: string[];
+  confidence?: number;
+}
+
+export interface VideoBenchmarkCriterion {
+  id: string;
+  name: string;
+  videoGuideline: string;
+  status: "pass" | "fail" | "warning";
+  detail: string;
+}
+
+export interface VideoBenchmarkComparison {
+  keyframeTitle: string;
+  videoRuleQuote: string;
+  videoTimestamp?: string;
+  whatVideoTeaches: string;
+  whatWasObserved: string;
+}
+
+export interface VideoWorkCheckResult {
+  id: string;
+  videoId: string;
+  videoTitle: string;
+  videoOrder: number;
+  userImageUrl: string;
+  imageFileName: string;
+  timestamp: string;
+  overallStatus: "correct" | "needs_improvement" | "unclear";
+  score: number; // e.g. 9.5
+  category: "slip_knot" | "yarn" | "needle" | "stitches" | "general";
+  title: string;
+  detectedElements: string[];
+  feedback: string;
+  benchmarkComparison: VideoBenchmarkComparison;
+  criteria: VideoBenchmarkCriterion[];
+  correctionSteps: string[];
+  nextAction: string;
+  sources: RAGSource[];
+  confidence: number;
+}
+
+export interface SampleWorkPhoto {
+  id: string;
+  title: string;
+  subtitle: string;
+  expectedStatus: "correct" | "needs_improvement";
+  targetVideoId: string;
+  targetVideoOrder: number;
+  imageUrl: string;
+  fileName: string;
+}
+

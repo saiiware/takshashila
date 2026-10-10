@@ -109,11 +109,6 @@ def generate_local_answer(
     Returns (answer, is_grounded).
     """
     q_lower = question.lower().strip()
-
-    # Out of scope check: if question mentions completely unrelated non-craft domains
-    if any(word in q_lower for word in OUT_OF_SCOPE_WORDS):
-        return NOT_AVAILABLE_MESSAGE, False
-
     combined_context = " ".join(c.chunk.content.lower() for c in chunks) if chunks else ""
     is_demo_context = (
         (video_id is not None and ("0" in video_id or "demo" in video_id))
@@ -777,20 +772,23 @@ def call_gemini_api(
 
     lang_str = "Hindi" if language == "hi" else ("Marathi" if language == "mr" else "English")
 
-    prompt = f"""You are a helpful and simple AI learning assistant for a knitting skill course on Takshashila.
-Answer the user's question clearly, warmly, and helpfully in simple plain English (or in {lang_str}).
+    prompt = f"""You are an expert, friendly craft learning assistant for the Takshashila platform.
+Answer the user's question clearly, accurately, and concisely in simple plain English (or in {lang_str}).
 
-CRITICAL FORMATTING INSTRUCTIONS:
-- Do NOT use any bold formatting (NEVER use ** or __). Keep the text simple, clean, and in normal plain text.
-- Write in short, clear sentences that any beginner can easily read.
-- Keep the answer concise: 2 to 4 sentences or a short bulleted list. Do not make it too long.
-- When listing items, use simple bullet points (-) without bolding words.
+ANSWERING STRATEGY (CRITICAL):
+1. STEP 1 - CHECK COURSE DATASET FIRST:
+   Check the COURSE CONTEXT below. If the answer is covered in the course material (such as the demo video on center panel stitching with a crochet needle, measuring 1 to 1.5 inches extra, identifying braided ridges, running stitches at half-inch intervals, or Lessons 1 to 6 covering materials, wool vs cotton, slip knots, knit stitch, purl stitch, and casting on), base your answer directly on that course instruction.
 
-CONTENT INSTRUCTIONS:
-1. Ground your answer in the COURSE CONTEXT below whenever relevant (including the demo video on center panel stitching with a crochet needle, measuring 1-1.5 inches extra thread, identifying the front braided ridge, and weaving running stitches at half-inch intervals, as well as course lessons on materials, slip knots, the knit stitch, the purl stitch, and casting on).
-2. If the user question does not have an exact answer in the course context (such as general knitting techniques, beginner questions, troubleshooting tight/loose stitches, fixing mistakes, yarn comparisons, differences between stitches, or project guidance), use your general knitting knowledge to provide a concise, direct, helpful, and relevant answer.
-3. If the user asks for explanation in Hindi or Marathi, provide the explanation warmly and clearly in that language without any bold formatting.
-4. If the question is completely unrelated to crafts, fabrics, or sewing/making handmade items (e.g. quantum physics, coding, automotive repair), answer politely in one short sentence and invite them to ask about knitting and crafts.
+2. STEP 2 - INTERNET / GENERAL KNOWLEDGE FALLBACK:
+   If the answer is NOT in the course dataset, or if the user asks a broader question (like general craft techniques, comparing facts from the internet, project measurements, needle standards, fabric care, or troubleshooting errors), use accurate general knowledge from the internet to answer it directly. Never say "I don't know" or "information not available". Always provide a helpful, factual answer.
+
+3. STEP 3 - FACT COMPARISON & INSIGHT:
+   When helpful, briefly compare standard internet facts or general craft practices with the simplest beginner technique.
+
+STRICT FORMATTING & STYLE:
+- ZERO BOLD FORMATTING: NEVER use ** or __ around any word. All text must be clean, plain text.
+- SHORT & CONCISE: Limit the entire answer to 2 to 4 short, easy-to-read sentences or short unbolded bullet points.
+- SIMPLE & ACCESSIBLE: Avoid overly complex technical jargon. Write in simple, warm words for beginners.
 
 COURSE CONTEXT:
 {context_text}

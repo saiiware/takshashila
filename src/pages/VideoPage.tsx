@@ -18,7 +18,7 @@ const DEMO_TIMESTAMPS = [
 export default function VideoPage() {
   const { videoId } = useParams<{ videoId: string }>();
   const navigate = useNavigate();
-  const { enrollment, isEnrolled, markCompleted, setLastAccessed } = useProgress();
+  const { enrollment, markCompleted, setLastAccessed } = useProgress();
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const videoIndex = MOCK_COURSE.videos.findIndex((v) => v.id === videoId);
@@ -67,120 +67,154 @@ export default function VideoPage() {
   };
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
-      <div className="space-y-4">
-        <Link to="/course" className="inline-flex items-center gap-1.5 text-base font-semibold text-workshop-600 hover:text-workshop-700 hover:underline">
-          <span>←</span> Back to Course Curriculum
-        </Link>
-
-        {/* Video Player */}
-        {video.videoUrl ? (
-          <div className="relative aspect-video w-full overflow-hidden rounded-card bg-black shadow-md">
-            <video
-              ref={videoRef}
-              controls
-              playsInline
-              preload="auto"
-              src={video.videoUrl}
-              className="h-full w-full object-contain"
-              onLoadedMetadata={handleLoadedMetadata}
-              onPlay={handleLoadedMetadata}
-            >
-              Your browser does not support the video tag.
-            </video>
-          </div>
-        ) : (
-          <div
-            className="flex aspect-video w-full items-center justify-center rounded-card text-white shadow-md"
-            style={{ backgroundColor: video.thumbnailColor }}
-          >
-            <div className="text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-white/20 backdrop-blur-xs">
-                <svg className="h-7 w-7 translate-x-0.5 fill-current text-white" viewBox="0 0 24 24">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-              </div>
-              <p className="mt-3 text-lg font-medium">
-                {video.order === 0 ? "Demo Lesson" : `Lesson ${video.order}`} of {MOCK_COURSE.totalVideos - 1}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Clickable Interactive Timestamps for Demo Video */}
-        {isDemo && (
-          <div className="rounded-card border border-workshop-200 bg-workshop-50/70 p-4 space-y-2.5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-workshop-800 flex items-center gap-1.5">
-                Interactive Video Timestamps:
+    <div className="space-y-6">
+      {/* 1. Lesson Introduction Shifted to Top (Above Video and AI Chatbot) */}
+      <Card className="border-workshop-200 bg-white shadow-xs">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div className="space-y-2 flex-1 min-w-0">
+            {/* Meta Tags & Breadcrumb */}
+            <div className="flex flex-wrap items-center gap-2">
+              <Link
+                to="/course"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-workshop-600 hover:text-workshop-700 hover:underline"
+              >
+                <span>←</span> Back to Course
+              </Link>
+              <span className="text-ink/30">•</span>
+              <span className="rounded-full bg-workshop-100 px-2.5 py-0.5 text-xs font-bold text-workshop-800">
+                {video.order === 0 ? "Featured Demo Lecture" : `Lesson ${video.order} of ${MOCK_COURSE.totalVideos - 1}`}
               </span>
-              <span className="text-[11px] text-ink/60">Click any timestamp to seek</span>
+              <span className="rounded-full bg-paper px-2.5 py-0.5 text-xs font-medium text-ink/60 border border-line flex items-center gap-1">
+                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {video.durationMinutes} min
+              </span>
+              {isCompleted && (
+                <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-800 border border-emerald-200">
+                  ✓ Completed
+                </span>
+              )}
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {DEMO_TIMESTAMPS.map((ts, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => seekVideo(ts.seconds)}
-                  className="flex items-center gap-2 rounded-lg bg-white border border-workshop-200 px-3 py-2 text-xs text-left hover:border-workshop-400 hover:bg-workshop-100/60 transition-all shadow-2xs group cursor-pointer"
-                >
-                  <span className="font-extrabold text-workshop-700 bg-workshop-100 px-2 py-0.5 rounded text-[11px]">
-                    {ts.time}
-                  </span>
-                  <span className="truncate text-ink/80 group-hover:text-ink font-medium">
-                    {ts.label}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
 
-        {/* Lesson Details Card */}
-        <Card>
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-2 mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-workshop-600">
-              {video.order === 0 ? "Featured Demo Lecture" : `Lesson ${video.order}`}
-            </span>
-            <span className="text-xs text-ink/50 font-medium">{video.durationMinutes} min</span>
+            {/* Title & Description */}
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-ink tracking-tight">
+              {video.title}
+            </h1>
+            <p className="text-sm md:text-base text-ink/70 leading-relaxed max-w-4xl">
+              {video.description}
+            </p>
           </div>
 
-          <h1 className="text-2xl font-bold text-ink">{video.title}</h1>
-          <p className="mt-2 text-base text-ink/70 leading-relaxed">{video.description}</p>
-
-          <div className="mt-5 flex flex-wrap items-center gap-3">
+          {/* Action Controls: Mark Completed & Lesson Navigation */}
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0 pt-2 lg:pt-0">
             <Button
               variant={isCompleted ? "ghost" : "secondary"}
               onClick={handleMarkCompleted}
               disabled={isCompleted}
+              className="shadow-2xs text-xs sm:text-sm"
             >
-              {isCompleted ? "✓ Completed" : "Mark as completed"}
+              {isCompleted ? "✓ Completed" : "Mark as Completed"}
             </Button>
-          </div>
 
-          <div className="mt-6 flex items-center justify-between border-t border-line pt-4">
-            <Button
-              variant="ghost"
-              onClick={() => previousVideo && goToVideo(previousVideo.id)}
-              disabled={!previousVideo}
-            >
-              ← Previous Lesson
-            </Button>
-            <Button
-              onClick={() => nextVideo && goToVideo(nextVideo.id)}
-              disabled={!nextVideo}
-            >
-              Next Lesson →
-            </Button>
+            <div className="flex items-center gap-1.5 border-l border-line pl-2.5">
+              <Button
+                variant="ghost"
+                onClick={() => previousVideo && goToVideo(previousVideo.id)}
+                disabled={!previousVideo}
+                className="text-xs sm:text-sm px-2.5"
+                title="Go to previous lesson"
+              >
+                ← Prev
+              </Button>
+              <Button
+                onClick={() => nextVideo && goToVideo(nextVideo.id)}
+                disabled={!nextVideo}
+                className="text-xs sm:text-sm px-3"
+                title="Go to next lesson"
+              >
+                Next →
+              </Button>
+            </div>
           </div>
-        </Card>
-      </div>
+        </div>
+      </Card>
 
-      {/* AI Assistant Chatbot Grounded in this Video */}
-      <div className="lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)]">
-        <Card className="flex h-full min-h-[460px] flex-col">
-          <AIAssistantPanel videoId={video.id} videoTitle={video.title} />
-        </Card>
+      {/* 2. Side-by-Side Main Area: Large Video Player (Left) + Large AI Chatbot Card (Right) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column: Enlarged Video Player & Timestamps */}
+        <div className="lg:col-span-7 xl:col-span-7 space-y-4">
+          {video.videoUrl ? (
+            <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-black shadow-md">
+              <video
+                ref={videoRef}
+                controls
+                playsInline
+                preload="auto"
+                src={video.videoUrl}
+                className="h-full w-full object-contain"
+                onLoadedMetadata={handleLoadedMetadata}
+                onPlay={handleLoadedMetadata}
+              >
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          ) : (
+            <div
+              className="flex aspect-video w-full items-center justify-center rounded-2xl text-white shadow-md"
+              style={{ backgroundColor: video.thumbnailColor }}
+            >
+              <div className="text-center">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-white/20 backdrop-blur-xs">
+                  <svg className="h-7 w-7 translate-x-0.5 fill-current text-white" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </div>
+                <p className="mt-3 text-lg font-medium">
+                  {video.order === 0 ? "Demo Lesson" : `Lesson ${video.order}`} of {MOCK_COURSE.totalVideos - 1}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Interactive Timestamps for Quick Seeking */}
+          {isDemo && (
+            <div className="rounded-card border border-workshop-200 bg-workshop-50/70 p-4 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-workshop-800 flex items-center gap-1.5">
+                  Interactive Video Timestamps:
+                </span>
+                <span className="text-[11px] text-ink/60">Click any timestamp to seek</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {DEMO_TIMESTAMPS.map((ts, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => seekVideo(ts.seconds)}
+                    className="flex items-center gap-2 rounded-lg bg-white border border-workshop-200 px-3 py-2 text-xs text-left hover:border-workshop-400 hover:bg-workshop-100/60 transition-all shadow-2xs group cursor-pointer"
+                  >
+                    <span className="font-extrabold text-workshop-700 bg-workshop-100 px-2 py-0.5 rounded text-[11px]">
+                      {ts.time}
+                    </span>
+                    <span className="truncate text-ink/80 group-hover:text-ink font-medium">
+                      {ts.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right Column: Enlarged AI Chatbot Card Side-by-Side with Video */}
+        <div className="lg:col-span-5 xl:col-span-5 lg:sticky lg:top-20">
+          <Card className="flex flex-col h-[580px] lg:h-[calc(100vh-10rem)] min-h-[520px] max-h-[760px] shadow-sm border-workshop-200 p-0 overflow-hidden">
+            <div className="flex flex-col h-full p-4 sm:p-5">
+              <AIAssistantPanel videoId={video.id} videoTitle={video.title} />
+            </div>
+          </Card>
+        </div>
       </div>
     </div>
   );

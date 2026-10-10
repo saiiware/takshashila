@@ -5,40 +5,68 @@ import MobileNav from "./MobileNav";
 import { useAuth } from "@/context/AuthContext";
 
 export default function AppLayout({ children }: { children: ReactNode }) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
   const { user } = useAuth();
 
-  // Automatically close sidebar drawer when user navigates to a new page
+  const isLessonPage = location.pathname.startsWith("/course/video");
+
+  // Mobile drawer state
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  // Desktop sidebar collapsed state (default to collapsed when on lesson page to maximize video & AI chatbot view)
+  const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(isLessonPage);
+
+  // Automatically collapse sidebar on desktop when entering lesson pages, and close mobile drawer on route change
   useEffect(() => {
-    setIsSidebarOpen(false);
-  }, [location.pathname]);
+    if (isLessonPage) {
+      setIsDesktopCollapsed(true);
+    }
+    setIsMobileOpen(false);
+  }, [location.pathname, isLessonPage]);
+
+  const handleToggleSidebar = () => {
+    if (window.innerWidth >= 768) {
+      setIsDesktopCollapsed((prev) => !prev);
+    } else {
+      setIsMobileOpen((prev) => !prev);
+    }
+  };
+
+  const handleCollapseSidebar = () => {
+    setIsDesktopCollapsed(true);
+    setIsMobileOpen(false);
+  };
 
   return (
     <div className="flex min-h-screen bg-paper text-ink">
-      {/* Sidebar with Hamburger-controlled Drawer on Mobile */}
-      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      {/* Sidebar with Hamburger-controlled Drawer on Mobile & Collapsible on Desktop */}
+      <Sidebar
+        isOpen={isMobileOpen}
+        onClose={() => setIsMobileOpen(false)}
+        isCollapsed={isDesktopCollapsed}
+        onToggleCollapse={() => setIsDesktopCollapsed((prev) => !prev)}
+        onLessonSelect={handleCollapseSidebar}
+      />
 
       {/* Main Content Area */}
-      <div className="flex flex-1 flex-col min-w-0">
+      <div className="flex flex-1 flex-col min-w-0 transition-all duration-300">
         {/* Top Header / App Bar with Hamburger */}
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-line/80 bg-white/90 px-4 backdrop-blur-md md:px-8">
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-line/80 bg-white/95 px-4 backdrop-blur-md md:px-8">
           <div className="flex items-center gap-3">
-            {/* Hamburger Button for Mobile / Drawer */}
+            {/* Hamburger Button for Mobile Drawer AND Desktop Sidebar Toggle */}
             <button
               type="button"
-              onClick={() => setIsSidebarOpen((prev) => !prev)}
-              aria-label={isSidebarOpen ? "Close navigation menu" : "Open navigation menu"}
-              aria-expanded={isSidebarOpen}
-              className="flex h-10 w-10 items-center justify-center rounded-lg border border-line bg-white text-ink/80 shadow-2xs hover:bg-workshop-50 hover:text-workshop-700 transition-colors md:hidden"
+              onClick={handleToggleSidebar}
+              aria-label="Toggle navigation menu"
+              title="Toggle sidebar menu"
+              className="flex h-10 items-center gap-2 rounded-lg border border-line bg-white px-3 text-ink/80 shadow-2xs hover:bg-workshop-50 hover:text-workshop-700 transition-all cursor-pointer active:scale-95"
             >
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                {isSidebarOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-                )}
+              <svg className="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
               </svg>
+              <span className="text-xs font-bold text-workshop-700 hidden sm:inline">
+                {isLessonPage ? "Lessons & Menu" : "Menu"}
+              </span>
             </button>
 
             {/* Platform Branding on Mobile Header */}
@@ -52,7 +80,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             {/* Desktop Breadcrumb/Course Indicator */}
             <div className="hidden md:flex items-center gap-2 text-sm text-ink/60">
               <span className="font-semibold text-workshop-600">Course:</span>
-              <span className="font-medium text-ink">Introduction to Knitting Craft</span>
+              <Link to="/course" className="font-medium text-ink hover:text-workshop-700 hover:underline">
+                Introduction to Knitting Craft
+              </Link>
             </div>
           </div>
 
@@ -80,7 +110,13 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
         {/* Page Content */}
         <main className="flex-1 pb-20 md:pb-10">
-          <div className="mx-auto max-w-5xl px-4 py-6 md:px-8 md:py-8">{children}</div>
+          <div
+            className={`mx-auto px-4 py-6 md:px-8 md:py-8 transition-all ${
+              isLessonPage ? "max-w-[1700px] w-full" : "max-w-6xl"
+            }`}
+          >
+            {children}
+          </div>
         </main>
       </div>
 

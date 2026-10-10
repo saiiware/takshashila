@@ -43,58 +43,311 @@ OUT_OF_SCOPE_WORDS = [
 ]
 
 
-def _strip_bold(text: str) -> str:
-    """Removes all markdown bold markers to ensure simple, plain text output."""
+def _clean_response(text: str) -> str:
+    """Removes all markdown bold markers and strips any brand or welcome greetings, and fixes glitched script characters."""
+    if not text:
+        return ""
     cleaned = re.sub(r"\*\*(.*?)\*\*", r"\1", text)
     cleaned = re.sub(r"__(.*?)__", r"\1", cleaned)
+
+    # Fix corrupted/hallucinated foreign script transliterations like "γκ레이" (grey) -> "ग्रे"
+    cleaned = re.sub(r"γκ레이|그레이", "ग्रे", cleaned)
+
+    # Remove "Welcome to Takshashila", "Welcome to...", brand greetings
+    cleaned = re.sub(r"\bwelcome\s+to\s+takshashila[^.!\n]*[.!\n]?", "", cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"\bwelcome\s+to\s+the\s+takshashila[^.!\n]*[.!\n]?", "", cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"\bwelcome\s+to\s+knitting[^.!\n]*[.!\n]?", "", cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"तक्षशिला\s*(मध्ये|वर|प्लॅटफॉर्मवर)?\s*(आपले)?\s*स्वागत\s*(आहे)?[.!,\n]?", "", cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"आपले\s*स्वागत\s*आहे[!.,]?", "", cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"^(\s*hello[!,.]?\s*welcome\s+to\s+[a-z0-9\s_-]+[.!,]\s*)", "", cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"^(\s*welcome\s+to\s+[a-z0-9\s_-]+[.!,]\s*)", "", cleaned, flags=re.IGNORECASE)
+
+    # If text is primarily Indic / Devanagari, clean any stray Korean, Greek, Cyrillic, or CJK characters
+    if re.search(r"[\u0900-\u097F]", cleaned):
+        cleaned = re.sub(r"[\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F\u0370-\u03FF\u0400-\u04FF\u4E00-\u9FFF]", "", cleaned)
+
+    # Clean double commas or spaces left after removing corrupted tokens
+    cleaned = re.sub(r",\s*,", ",", cleaned)
+    cleaned = re.sub(r"\s{2,}", " ", cleaned)
+    cleaned = re.sub(r"\s+,", ",", cleaned)
+
     return cleaned.strip()
 
 
-def localize_answer(text: str, language: str) -> str:
-    cleaned = _strip_bold(text)
-    if language == "hi":
-        return f"पाठ्यक्रम सामग्री के अनुसार (सरल शब्दों में):\n\n{cleaned}"
+def _strip_bold(text: str) -> str:
+    return _clean_response(text)
+
+
+def detect_language(question: str, preferred: str = "en") -> str:
+    """Detects whether a question is asked in Marathi, Hindi, or English."""
+    if preferred in ("mr", "hi"):
+        return preferred
+
+    text = question.strip()
+    # 1. Devanagari script detection
+    if re.search(r"[\u0900-\u097F]", text):
+        if re.search(r"\b(क्या|कैसे|करना|चाहिए|सिलाई|बताएं|बताओ|धागा)\b", text):
+            return "hi"
+        return "mr"
+
+    lower = text.lower()
+    # 2. Explicit request
+    if any(k in lower for k in ("in marathi", "marathit", "marathi madhe", "marathi bhasha")):
+        return "mr"
+    if any(k in lower for k in ("in hindi", "hindi me", "hindi mai")):
+        return "hi"
+
+    # 3. Romanized Marathi indicator words
+    marathi_words = [
+        "kashi", "kasa", "kase", "kashya", "kashala", "kiti", "kuthe", "kay", "kashamule", "ka",
+        "kuthla", "kuthli", "kuthle", "konta", "konti", "konte", "sobat", "jail", "jaato", "jaate",
+        "chaan", "chan", "dista", "distat", "ranga", "rang",
+        "banvaychi", "banvaycha", "banvava", "banvave", "karaycha", "karaychi", "karayche", "karnar",
+        "pahije", "lagte", "lagto", "lagtat", "hawa", "havi", "havet",
+        "shiku", "shikaycha", "shikaychi", "suruvat", "suru", "nantar",
+        "chook", "chukle", "durust", "sutla", "sutle", "sutli", "taan", "khatin", "sail",
+        "suya", "suyanna", "suyanche", "sui", "crosha", "krosha",
+        "lokar", "lokricha", "lokriche", "gaath", "gath", "taka", "take", "takyanna", "takya",
+        "fanda", "fande", "oli", "vinane", "vinun", "vinat", "sulat", "alti", "ulti",
+        "farak", "dakhva", "sang", "sanga", "baddal", "mahiti", "aahe", "ahe", "nahit", "nahi",
+        "madhe", "varun"
+    ]
+    pattern = r"\b(" + "|".join(marathi_words) + r")\b"
+    if re.search(pattern, lower):
+        return "mr"
+
+    return "en"
+
+
+def translate_to_marathi(en_text: str) -> str:
+    """Provides high-quality, fluent Marathi translation in Devanagari script for craft answers."""
+    lower = en_text.lower()
+
+    if "slip knot" in lower and any(k in lower for k in ("adjustable", "step", "form a", "simple loop", "yarn")):
+        return (
+            "स्लिप नॉट बनवण्याची पद्धत:\n"
+            "1. लोकरीचा एक साधा लूप तयार करा.\n"
+            "2. लूपमधून चालू धागा ओढून एक सरकणारी गाठ बनवा.\n"
+            "3. ही गाठ सुईवर अडकवा आणि धाग्याची टोके हलकेच ओढून व्यवस्थित बसवा. टाका सुईवर सहज सरकेल इतका सैल ठेवा."
+        )
+
+    if "knit stitch" in lower and "purl stitch" in lower and any(k in lower for k in ("fundamental", "difference", "two")):
+        return (
+            "सुलट टाका (Knit stitch) आणि उलटा टाका (Purl stitch) हे विणकामातील दोन मूलभूत टाके आहेत:\n"
+            "- सुलट टाका: धागा मागच्या बाजूला धरून विणला जातो, ज्यामुळे समोरच्या बाजूला 'V' आकाराचे गुळगुळीत टाके दिसतात.\n"
+            "- उलटा टाका: धागा पुढच्या बाजूला धरून विणला जातो, ज्यामुळे आडवे खडबडीत उंचवटे (बम्प्स) तयार होतात.\n"
+            "हे दोन्ही टाके आलटून-पालटून विणल्याने सुंदर रिबिंग आणि डिझाइन्स तयार होतात."
+        )
+
+    if "knit stitch" in lower and any(k in lower for k in ("insert", "step", "wrap", "v-shape", "hold")):
+        return (
+            "सुलट टाका (Knit stitch) विणण्याची पद्धत:\n"
+            "1. डाव्या हातातील सुईवर टाके ठेवा आणि चालू धागा नेहमी पाठीमागे ठेवा.\n"
+            "2. उजवी सुई टाक्यात समोरून मागे (खालून वर) घाला.\n"
+            "3. धागा उजव्या सुईभोवती घड्याळाच्या विरुद्ध दिशेने फिरवा.\n"
+            "4. नवीन लूप बाहेर ओढा आणि डाव्या सुईवरील जुना टाका अलगद खाली सरकवा."
+        )
+
+    if "purl stitch" in lower and any(k in lower for k in ("insert", "step", "front", "bump", "hold")):
+        return (
+            "उलटा टाका (Purl stitch) विणण्याची पद्धत:\n"
+            "1. डाव्या सुईवर टाके धरा आणि चालू धागा नेहमी पुढच्या बाजूला ठेवा.\n"
+            "2. उजवी सुई टाक्यात पुढून पाठीमागच्या दिशेने घाला.\n"
+            "3. धागा उजव्या सुईभोवती फिरवून नवीन लूप बाहेर काढा.\n"
+            "4. डाव्या सुईवरील जुना टाका अलगद खाली सरकवून नवीन उलटा टाका पूर्ण करा."
+        )
+
+    if any(k in lower for k in ("cast on", "casting on", "foundation")):
+        return (
+            "टाके घालण्याची (Casting on) पद्धत:\n"
+            "1. प्रथम एक स्लिप नॉट बांधून सुईवर पहिला टाका म्हणून चढवा.\n"
+            "2. दुसऱ्या सुईने त्या टाक्यातून नवीन लूप विणून बाहेर काढा.\n"
+            "3. हा नवीन लूप पुन्हा डाव्या सुईवर चढवा.\n"
+            "4. तुम्हाला हव्या तितक्या टाक्यांची पायाभूत ओळ तयार होईपर्यंत ही कृती पुन्हा करा."
+        )
+
+    if "drop" in lower and "stitch" in lower:
+        return (
+            "जर एखादा टाका सुईवरून निसटला, तर घाबरू नका. तो निसटलेला लूप बोटाने किंवा क्रोशा सुईने लगेच पकडा. "
+            "वरचा धागा त्या लूपमधून बाहेर ओढून टाका पुन्हा दुरुस्त करा आणि डाव्या सुईवर चढवा."
+        )
+
+    if any(k in lower for k in ("tink", "undo", "mistake")):
+        return (
+            "विणकाम न मोडता चूक दुरुस्त करण्यासाठी एकेक टाका उलटा सोडवा (Tinking). "
+            "उजव्या सुईवरील टाक्याच्या खालच्या लूपमध्ये डावी सुई समोरून मागे घाला, चालू धागा हलकेच ओढा आणि तो टाका पुन्हा डाव्या सुईवर घ्या."
+        )
+
+    if "tight" in lower and any(k in lower for k in ("needle", "stitch", "stuck")):
+        return (
+            "टाके खूप घट्ट होऊन सुई अडकत असल्यास, तुम्ही धागा जास्त जोराने ओढत आहात. "
+            "हाताची पकड सैल ठेवा, टाके सुईच्या टोकावर न विणता सुईच्या जाड भागावर सरकवून हलक्या हाताने विणा."
+        )
+
+    if "loose" in lower and any(k in lower for k in ("stitch", "tension")):
+        return (
+            "धागा सैल सोडल्यामुळे टाके खूप मोठे आणि सैल होतात. "
+            "विणताना चालू धागा तुमच्या तर्जनीवर (पहिल्या बोटावर) हलका गुंडाळून ठेवा, ज्यामुळे प्रत्येक टाक्याला एकसमान ताण मिळेल."
+        )
+
+    if "needle" in lower and any(k in lower for k in ("size", "two", "pair", "wood", "metal")):
+        return (
+            "विणकामासाठी सामान्यतः दोन सुया लागतात. मध्यम जाडीच्या लोकरीसाठी 4 मिमी ते 5 मिमी (US 6 ते 8) आकाराच्या सुया नवशिक्यांसाठी उत्तम असतात. "
+            "सुईचा अचूक आकार लोकरीच्या लेबलवर दिलेला असतो."
+        )
+
+    if any(k in lower for k in ("yarn", "wool", "cotton", "acrylic")):
+        return (
+            "नवीन शिकणाऱ्यांसाठी मध्यम जाडीची आणि फिकट रंगाची लोकर उत्तम असते, कारण फिकट रंगात प्रत्येक टाका स्पष्ट दिसतो. "
+            "लोकर मऊ आणि लवचिक असल्याने शिकण्यासाठी सर्वात सोपी आहे."
+        )
+
+    if any(k in lower for k in ("crochet", "running stitch", "center panel")):
+        return (
+            "डेमो पाठात क्रोशा सुई वापरून मध्यवर्ती पट्टीच्या कडांवर अर्ध्या इंचाच्या अंतरावर धावदोरा (रनिंग स्टिच) घातला जातो. "
+            "धागा मोजताना 1 ते 1.5 इंच जास्त ठेवावा आणि वेणीसारखी नक्षी समोर ठेवून विणावे."
+        )
+
+    if "hold" in lower and "needle" in lower:
+        return (
+            "टाके असलेली सुई डाव्या हातात आणि रिकामी सुई उजव्या हातात पेन्सिलप्रमाणे किंवा चाकू पकडल्यासारखी हलकी धरा. "
+            "मनगट आणि बोटे सैल ठेवून आरामात विणकाम करा."
+        )
+
+    if any(k in lower for k in ("increase", "kfb")):
+        return (
+            "टाके वाढवण्यासाठी एकाच टाक्याच्या पुढच्या भागातून विणा आणि तो न सोडवता त्याच टाक्याच्या मागच्या भागातून पुन्हा विणा (KFB पद्धत). "
+            "यामुळे एका टाक्याचे दोन टाके होतात."
+        )
+
+    if any(k in lower for k in ("decrease", "k2tog")):
+        return (
+            "टाके कमी करण्यासाठी उजवी सुई डाव्या सुईवरील दोन टाक्यांत एकदम घाला आणि दोन्ही टाके एकत्र विणा (K2tog पद्धत). "
+            "यामुळे दोन टाक्यांचा एक टाका होतो."
+        )
+
+    if any(k in lower for k in ("bind off", "cast off", "finish")):
+        return (
+            "प्रकल्प पूर्ण करण्यासाठी (Bind off):\n"
+            "1. उजव्या सुईवर दोन टाके विणा.\n"
+            "2. डाव्या सुईने पहिला टाका दुसऱ्या टाक्यावरून उचलून सुईच्या बाहेर काढा.\n"
+            "3. आणखी एक टाका विणा आणि मागचा टाका पुन्हा वरून बाहेर काढा.\n"
+            "4. शेवटचा एक लूप उरेपर्यंत ही कृती करा, धागा कापून लूपमधून ओढून पक्का करा."
+        )
+
+    if "what is knitting" in lower or ("knitting is a" in lower and "craft" in lower):
+        return (
+            "विणकाम ही सुया आणि धाग्याच्या साहाय्याने एकमेकात गुंतलेले लूप्स तयार करून कापड बनवण्याची एक कला आहे. "
+            "यातून स्वेटर, मफलर, टोप्या आणि इतर सुंदर वस्तू बनवता येतात."
+        )
+
+    if any(k in lower for k in ("learning path", "beginner")):
+        return (
+            "विणकाम शिकण्याचा सर्वात सोपा मार्ग:\n"
+            "1. प्रथम सुया आणि लोकरीची माहिती समजून घ्या (पाठ 2).\n"
+            "2. स्लिप नॉट बांधण्याचा सराव करा (पाठ 3).\n"
+            "3. सुईवर पायाभूत टाके घाला - कास्टिंग ऑन (पाठ 6).\n"
+            "4. सुलट टाका (पाठ 4) आणि उलटा टाका (पाठ 5) विणण्याचा सराव करा."
+        )
+
+    return (
+        "अभ्यासक्रमातील माहितीनुसार, योग्य सुया आणि लोकर निवडून हलक्या हाताने विणकाम सुरू करावे. "
+        "टाके एकसारखे ठेवून हळूहळू सराव केल्यास विणकाम मजबूत आणि आकर्षक बनते."
+    )
+
+
+def normalize_indic_query(text: str) -> str:
+    """Detects and normalizes Romanized Marathi / Hindi queries so that questions typed
+    in English script (e.g. 'slip knot kashi banvaychi?', 'purl stitch kasa karaycha?',
+    'needle kashala mahantat?') resolve to the exact same canonical topic words as English queries.
+    """
+    q = text.lower()
+    # Map common Romanized Marathi question stems & terms to standard English concepts
+    replacements = [
+        # Question words
+        (r"\b(kashi|kasa|kase|kashya|kiti|kuthe|kay|kashala)\b", "how what"),
+        (r"\b(ka|kashamule)\b", "why"),
+        (r"\b(banvaychi|banvaycha|banvava|banvave|karnar|karaycha|karaychi)\b", "make start create"),
+        (r"\b(pahije|lagte|lagto|lagtat|hawa|havi)\b", "need required use"),
+        (r"\b(shiku|shikaycha|shikaychi)\b", "learn start"),
+        (r"\b(suruvat|suru)\b", "start begin"),
+        (r"\b(nantar)\b", "next after"),
+        (r"\b(chook|chukle|durust)\b", "mistake error fix correct"),
+        (r"\b(sutla|sutle|sutli)\b", "drop dropped slip"),
+        (r"\b(taan|khatin)\b", "tight tension"),
+        (r"\b(sail|dheela)\b", "loose"),
+        # Craft nouns
+        (r"\b(sui|suya|suyanche|suyanna)\b", "needle needles"),
+        (r"\b(crosha|krosha)\b", "crochet hook needle"),
+        (r"\b(lokar|lokricha|lokriche)\b", "wool yarn"),
+        (r"\b(dhaga|dora)\b", "thread yarn"),
+        (r"\b(gaath|gath|gaanth)\b", "slip knot knot"),
+        (r"\b(taka|take|takyanna|takya)\b", "stitch stitches loop"),
+        (r"\b(fanda|fande)\b", "stitch loop cast on"),
+        (r"\b(ol|oli)\b", "row rows"),
+        (r"\b(vinane|vinun|vinat)\b", "knit knitting"),
+        (r"\b(saral|sidha|seedha)\b", "knit stitch"),
+        (r"\b(ulti|ulta)\b", "purl stitch"),
+        (r"\b(farak|bhed)\b", "difference"),
+    ]
+    for pattern, replacement in replacements:
+        q = re.sub(pattern, replacement, q)
+    return q
+
+
+def localize_answer(text: str, language: str, mr_text: Optional[str] = None) -> str:
     if language == "mr":
-        return f"अभ्यासक्रम माहितीनुसार (सोप्या भाषेत):\n\n{cleaned}"
-    return cleaned
+        if mr_text:
+            return _clean_response(mr_text)
+        return _clean_response(translate_to_marathi(text))
+    if language == "hi":
+        return _clean_response(f"पाठ्यक्रम सामग्री के अनुसार:\n\n{text}")
+    return _clean_response(text)
 
 
-def build_dynamic_summary(content: str) -> str:
-    """Creates a clear, concise summary in simple English if a custom topic match isn't triggered."""
+def build_dynamic_summary(content: str, language: str = "en") -> str:
+    """Creates a clear, concise summary in simple English (or Marathi) if a custom topic match isn't triggered."""
     c_lower = content.lower()
     if "running stitch" in c_lower or "half-inch" in c_lower:
         return (
-            "In the demo lesson, a running stitch is used along the edges at half-inch intervals "
-            "with a crochet needle to secure the center panel."
+            "डेमो पाठात क्रोशा सुई वापरून मध्यवर्ती पट्टीच्या कडांवर अर्ध्या इंचाच्या अंतरावर धावदोरा (रनिंग स्टिच) घातला जातो."
+            if language == "mr"
+            else "In the demo lesson, a running stitch is used along the edges at half-inch intervals with a crochet needle to secure the center panel."
         )
     if "center panel" in c_lower or "crochet" in c_lower:
         return (
-            "In the demo lecture, you measure thread leaving 1 to 1.5 inches extra, use a crochet needle, "
-            "place the braided ridge lines on the front, and weave running stitches at half-inch intervals."
+            "डेमो पाठात धागा मोजताना 1 ते 1.5 इंच जास्त ठेवावा, क्रोशा सुई वापरावी आणि वेणीसारखी नक्षी समोर ठेवून अर्ध्या इंचाच्या अंतरावर धावदोरा घालावा."
+            if language == "mr"
+            else "In the demo lecture, you measure thread leaving 1 to 1.5 inches extra, use a crochet needle, place the braided ridge lines on the front, and weave running stitches at half-inch intervals."
         )
     if "creative skill" in content:
         return (
-            "Knitting is a creative craft using yarn and needles to make items like sweaters, "
-            "scarves, caps, and bags, while fostering patience and creativity."
+            "विणकाम ही सुया आणि धाग्यांच्या साहाय्याने स्वेटर, मफलर, टोप्या आणि पिशव्या बनवण्याची एक कला आहे, ज्यामुळे एकाग्रता वाढते."
+            if language == "mr"
+            else "Knitting is a creative craft using yarn and needles to make items like sweaters, scarves, caps, and bags, while fostering patience and creativity."
         )
     if "Material Knowledge" in content:
         return (
-            "Material knowledge in knitting involves understanding how to choose the right yarn "
-            "(wool vs cotton), needles, and accessories to produce durable, high-quality items."
+            "विणकामासाठी योग्य लोकर (लोकर वि. कॉटन), सुया आणि इतर साहित्याची योग्य निवड समजून घेणे आवश्यक आहे."
+            if language == "mr"
+            else "Material knowledge in knitting involves understanding how to choose the right yarn (wool vs cotton), needles, and accessories to produce durable, high-quality items."
         )
     if "slip knot" in content:
         return (
-            "Knitting begins by forming a slip knot loop on one needle, inserting the second needle, "
-            "and drawing yarn through to create connected loops."
+            "विणकामाची सुरुवात एका सुईवर स्लिप नॉट बांधून, दुसरी सुई घालून आणि धागा ओढून नवीन लूप्स तयार करण्याने होते."
+            if language == "mr"
+            else "Knitting begins by forming a slip knot loop on one needle, inserting the second needle, and drawing yarn through to create connected loops."
         )
     if "present and share" in content:
         return (
-            "Presenting knitted creations neatly and sharing them at exhibitions or online helps "
-            "showcase your craftsmanship to others."
+            "विणलेल्या सुंदर वस्तू प्रदर्शनात किंवा ऑनलाईन शेअर केल्याने तुमच्या कलेला दाद मिळते."
+            if language == "mr"
+            else "Presenting knitted creations neatly and sharing them at exhibitions or online helps showcase your craftsmanship to others."
         )
     return (
-        "The lesson emphasizes understanding your materials, keeping stitches even, and practicing "
-        "slowly to produce strong, attractive knitted fabric."
+        "अभ्यासक्रमातील माहितीनुसार, योग्य साहित्य निवडून आणि टाके एकसारखे ठेवून शांतपणे विणण्याचा सराव करावा."
+        if language == "mr"
+        else "The lesson emphasizes understanding your materials, keeping stitches even, and practicing slowly to produce strong, attractive knitted fabric."
     )
 
 
@@ -108,7 +361,10 @@ def generate_local_answer(
     and synthesizes a concise, simple answer in plain text without any bold formatting.
     Returns (answer, is_grounded).
     """
-    q_lower = question.lower().strip()
+    effective_language = detect_language(question, language)
+    language = effective_language
+    raw_lower = question.lower().strip()
+    q_lower = normalize_indic_query(raw_lower)
     combined_context = " ".join(c.chunk.content.lower() for c in chunks) if chunks else ""
     is_demo_context = (
         (video_id is not None and ("0" in video_id or "demo" in video_id))
@@ -119,9 +375,9 @@ def generate_local_answer(
     )
 
     # ==========================================
-    # 0. LANGUAGE REQUESTS (Hindi / Marathi)
+    # 0. EXPLICIT LANGUAGE REQUESTS (Hindi / Marathi Overview)
     # ==========================================
-    if "marathi" in q_lower or "मराठी" in q_lower:
+    if ("explain this in marathi" in raw_lower or "मराठीत सांगा" in raw_lower or raw_lower == "can you explain this in marathi?") and not any(k in raw_lower for k in ("slip", "knit", "purl", "cast", "needle", "yarn")):
         answer = (
             "विणकामात दोन सुया आणि लोकर वापरून लूप्स (टाके) तयार करून कापड बनवले जाते.\n"
             "- प्रथम स्लिप नॉट बांधून सुईवर टाके घाला (Casting on).\n"
@@ -130,7 +386,7 @@ def generate_local_answer(
         )
         return _strip_bold(answer), True
 
-    if "hindi" in q_lower or "हिंदी" in q_lower:
+    if ("explain this in hindi" in raw_lower or "हिंदी में बताएं" in raw_lower or raw_lower == "can you explain this in hindi?") and not any(k in raw_lower for k in ("slip", "knit", "purl", "cast", "needle", "yarn")):
         answer = (
             "बुनाई में दो सिलाइयों और धागे की मदद से फंदे बनाकर कपड़ा तैयार किया जाता है।\n"
             "- सबसे पहले एक स्लिप नॉट बनाकर सिलाई पर फंदे डालें (Casting on)।\n"
@@ -631,7 +887,7 @@ def generate_local_answer(
     # What to learn / practice first / completely new / never used needles
     if any(k in q_lower for k in ("where should i start", "where do i start", "what should i learn", "practice first", "never used", "completely new", "guide me")):
         answer = (
-            "Welcome to knitting! Here is the best beginner learning path:\n"
+            "Here is the best beginner learning path for knitting:\n"
             "1. Learn how to make a slip knot (Lesson 3 & 6).\n"
             "2. Practice casting on 15 to 20 stitches onto your needle (Lesson 6).\n"
             "3. Master the knit stitch row by row (Lesson 4).\n"
@@ -772,23 +1028,40 @@ def call_gemini_api(
 
     lang_str = "Hindi" if language == "hi" else ("Marathi" if language == "mr" else "English")
 
-    prompt = f"""You are an expert, friendly craft learning assistant for the Takshashila platform.
-Answer the user's question clearly, accurately, and concisely in simple plain English (or in {lang_str}).
+    prompt = f"""You are an expert, friendly craft learning assistant.
+Answer the user's question clearly, accurately, and concisely.
 
-ANSWERING STRATEGY (CRITICAL):
-1. STEP 1 - CHECK COURSE DATASET FIRST:
-   Check the COURSE CONTEXT below. If the answer is covered in the course material (such as the demo video on center panel stitching with a crochet needle, measuring 1 to 1.5 inches extra, identifying braided ridges, running stitches at half-inch intervals, or Lessons 1 to 6 covering materials, wool vs cotton, slip knots, knit stitch, purl stitch, and casting on), base your answer directly on that course instruction.
+CRITICAL RULES (STRICT COMPLIANCE):
+1. ZERO WELCOME GREETINGS OR BRANDING:
+   - NEVER say "Welcome to Takshashila", "Welcome to...", or use introductory welcome greetings.
+   - Do NOT mention the platform name.
+   - Jump directly into the factual, helpful answer.
 
-2. STEP 2 - INTERNET / GENERAL KNOWLEDGE FALLBACK:
-   If the answer is NOT in the course dataset, or if the user asks a broader question (like general craft techniques, comparing facts from the internet, project measurements, needle standards, fabric care, or troubleshooting errors), use accurate general knowledge from the internet to answer it directly. Never say "I don't know" or "information not available". Always provide a helpful, factual answer.
+2. LANGUAGE & SCRIPT INSTRUCTION (CRITICAL):
+   - If the user asks in Marathi (whether in Marathi Devanagari script OR Romanized Marathi typed with English alphabet such as 'kuthla ranga pink sobat jail', 'slip knot kashi banvaychi?', 'purl stitch kasa karaycha?', 'suya kiti lagtat?', 'vinane kase shiku?'):
+     YOU MUST WRITE THE ENTIRE ANSWER IN PROPER MARATHI IN DEVANAGARI SCRIPT (मराठी देवनागरी लिपी).
+     Do NOT write in English. Do NOT write in English alphabet.
+     Use fluent, authentic, polite Marathi sentences in Devanagari script.
+   - SCRIPT PURITY:
+     STRICTLY use standard Devanagari characters (देवनागरी) and authentic Marathi words (e.g. write 'ग्रे' or 'राखाडी' for grey, 'पांढरा' for white, 'गुलाबी' for pink).
+     NEVER output Korean (Hangul), Greek (like γκ), Cyrillic, or any glitched foreign alphabet characters under any circumstances.
+   - If the user asks in English:
+     Write the entire answer in simple, concise English.
+   - If the user asks in Hindi:
+     Write the entire answer in clear Hindi in Devanagari script.
 
-3. STEP 3 - FACT COMPARISON & INSIGHT:
-   When helpful, briefly compare standard internet facts or general craft practices with the simplest beginner technique.
+3. ANSWERING STRATEGY:
+   - STEP 1 - CHECK COURSE DATASET FIRST:
+     Check the COURSE CONTEXT below. If covered (video demo, measuring 1 to 1.5 inches extra, braided ridges, running stitch with crochet needle, or Lessons 1 to 6 on materials, slip knots, knit stitch, purl stitch, casting on), base your answer directly on that course instruction.
+   - STEP 2 - INTERNET / GENERAL KNOWLEDGE FALLBACK:
+     If the answer is NOT in the course dataset, or if the user asks a broader craft question, use accurate general internet knowledge. Never say "I don't know" or "information not available".
+   - STEP 3 - FACT COMPARISON & INSIGHT:
+     When helpful, briefly compare standard internet facts or craft practices with the simplest beginner technique.
 
-STRICT FORMATTING & STYLE:
-- ZERO BOLD FORMATTING: NEVER use ** or __ around any word. All text must be clean, plain text.
-- SHORT & CONCISE: Limit the entire answer to 2 to 4 short, easy-to-read sentences or short unbolded bullet points.
-- SIMPLE & ACCESSIBLE: Avoid overly complex technical jargon. Write in simple, warm words for beginners.
+4. STRICT FORMATTING & STYLE:
+   - ZERO BOLD FORMATTING: NEVER use ** or __ around any word. All text must be clean, plain text.
+   - SHORT & CONCISE: Limit the entire answer to 2 to 4 short sentences or concise unbolded bullet points.
+   - SIMPLE & ACCESSIBLE: Avoid overly complex technical jargon.
 
 COURSE CONTEXT:
 {context_text}
@@ -831,7 +1104,7 @@ USER QUESTION:
                         .get("text", "")
                     )
                     if text:
-                        return _strip_bold(text.strip())
+                        return _clean_response(text.strip())
         except Exception:
             continue
 
@@ -844,23 +1117,27 @@ def generate_rag_answer(
     language: str = "en",
     video_id: Optional[str] = None,
 ) -> RAGAnswerResult:
-    """Produces final RAG answer, sanitizing any bold text and extracting sources."""
+    """Produces final RAG answer, sanitizing any bold text, greetings, and extracting sources."""
     answer: Optional[str] = None
     is_grounded = True
+
+    effective_language = detect_language(question, language)
 
     # 1. Attempt Gemini LLM generation if API key is provided
     api_key = _load_api_key()
     if api_key:
-        answer = call_gemini_api(question, retrieved_chunks, language)
+        answer = call_gemini_api(question, retrieved_chunks, effective_language)
         if answer == NOT_AVAILABLE_MESSAGE:
             is_grounded = False
 
     # 2. Fallback to local verified grounded generator
     if not answer:
-        answer, is_grounded = generate_local_answer(question, retrieved_chunks, language, video_id=video_id)
+        answer, is_grounded = generate_local_answer(
+            question, retrieved_chunks, effective_language, video_id=video_id
+        )
 
-    # Clean and strip any bold syntax across all outputs
-    answer = _strip_bold(answer)
+    # Clean and strip any bold syntax and greetings across all outputs
+    answer = _clean_response(answer)
 
     # 3. Source attribution
     sources: List[RAGSource] = []
@@ -880,13 +1157,29 @@ def generate_rag_answer(
 
     # 4. Relevant questions suggestion
     if is_grounded:
-        relevant_questions = generate_relevant_questions(question, retrieved_chunks, video_id)
+        relevant_questions = (
+            [
+                "स्लिप नॉट कशी बनवायची?",
+                "सुलट आणि उलटा टाका कसा विणायचा?",
+                "नवशिक्यांसाठी कोणत्या सुया आणि लोकर योग्य आहेत?",
+            ]
+            if effective_language == "mr"
+            else generate_relevant_questions(question, retrieved_chunks, video_id)
+        )
     else:
-        relevant_questions = [
-            "What is knitting?",
-            "What materials are required?",
-            "How do I start knitting?",
-        ]
+        relevant_questions = (
+            [
+                "विणकाम कसे सुरू करावे?",
+                "कोणते साहित्य आवश्यक आहे?",
+                "स्लिप नॉट कशी बांधावी?",
+            ]
+            if effective_language == "mr"
+            else [
+                "What is knitting?",
+                "What materials are required?",
+                "How do I start knitting?",
+            ]
+        )
 
     confidence = retrieved_chunks[0].score if (is_grounded and retrieved_chunks) else 0.0
 

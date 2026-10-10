@@ -23,8 +23,124 @@ const OUT_OF_SCOPE_WORDS = [
   "historical origin", "ancient country"
 ];
 
+export function cleanResponse(text: string): string {
+  if (!text) return "";
+  let cleaned = text
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/__(.*?)__/g, "$1");
+
+  // Fix corrupted/hallucinated foreign script transliterations like "γκ레이" (grey) -> "ग्रे"
+  cleaned = cleaned.replace(/γκ레이|그레이/g, "ग्रे");
+
+  // Remove "Welcome to Takshashila", "Welcome to...", brand greetings
+  cleaned = cleaned
+    .replace(/\bwelcome\s+to\s+takshashila[^.!\n]*[.!\n]?/gi, "")
+    .replace(/\bwelcome\s+to\s+the\s+takshashila[^.!\n]*[.!\n]?/gi, "")
+    .replace(/\bwelcome\s+to\s+knitting[^.!\n]*[.!\n]?/gi, "")
+    .replace(/तक्षशिला\s*(मध्ये|वर|प्लॅटफॉर्मवर)?\s*(आपले)?\s*स्वागत\s*(आहे)?[.!,\n]?/gi, "")
+    .replace(/आपले\s*स्वागत\s*आहे[!.,]?/gi, "")
+    .replace(/^(\s*hello[!,.]?\s*welcome\s+to\s+[a-z0-9\s_-]+[.!,]\s*)/i, "")
+    .replace(/^(\s*welcome\s+to\s+[a-z0-9\s_-]+[.!,]\s*)/i, "");
+
+  // If text is primarily Indic / Devanagari, clean any stray Korean, Greek, Cyrillic, or CJK characters
+  if (/[\u0900-\u097F]/.test(cleaned)) {
+    cleaned = cleaned.replace(/[\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F\u0370-\u03FF\u0400-\u04FF\u4E00-\u9FFF]/g, "");
+  }
+
+  // Clean double commas or spaces left after removing corrupted tokens
+  cleaned = cleaned
+    .replace(/,\s*,/g, ",")
+    .replace(/\s{2,}/g, " ")
+    .replace(/\s+,/g, ",")
+    .trim();
+
+  return cleaned;
+}
+
+export function detectLanguage(question: string, preferred: Language = "en"): Language {
+  if (preferred === "mr" || preferred === "hi") return preferred;
+
+  const text = question.trim();
+  // 1. Devanagari script detection
+  if (/[\u0900-\u097F]/.test(text)) {
+    if (/\b(क्या|कैसे|करना|चाहिए|सिलाई|बताएं|बताओ|धागा)\b/.test(text)) {
+      return "hi";
+    }
+    return "mr";
+  }
+
+  const lower = text.toLowerCase();
+  // 2. Explicit language request
+  if (
+    lower.includes("in marathi") ||
+    lower.includes("marathit") ||
+    lower.includes("marathi madhe") ||
+    lower.includes("marathi bhasha")
+  ) {
+    return "mr";
+  }
+  if (lower.includes("in hindi") || lower.includes("hindi me") || lower.includes("hindi mai")) {
+    return "hi";
+  }
+
+  // 3. Romanized Marathi indicator words
+  const marathiWords = [
+    "kashi", "kasa", "kase", "kashya", "kashala", "kiti", "kuthe", "kay", "kashamule", "ka",
+    "kuthla", "kuthli", "kuthle", "konta", "konti", "konte", "sobat", "jail", "jaato", "jaate",
+    "chaan", "chan", "dista", "distat", "ranga", "rang",
+    "banvaychi", "banvaycha", "banvava", "banvave", "karaycha", "karaychi", "karayche", "karnar",
+    "pahije", "lagte", "lagto", "lagtat", "hawa", "havi", "havet",
+    "shiku", "shikaycha", "shikaychi", "suruvat", "suru", "nantar",
+    "chook", "chukle", "durust", "sutla", "sutle", "sutli", "taan", "khatin", "sail",
+    "suya", "suyanna", "suyanche", "sui", "crosha", "krosha",
+    "lokar", "lokricha", "lokriche", "gaath", "gath", "taka", "take", "takyanna", "takya",
+    "fanda", "fande", "oli", "vinane", "vinun", "vinat", "sulat", "alti", "ulti",
+    "farak", "dakhva", "sang", "sanga", "baddal", "mahiti", "aahe", "ahe", "nahit", "nahi",
+    "madhe", "varun"
+  ];
+  const pattern = new RegExp(`\\b(${marathiWords.join("|")})\\b`, "i");
+  if (pattern.test(lower)) {
+    return "mr";
+  }
+
+  return "en";
+}
+
 function stripBold(text: string): string {
-  return text.replace(/\*\*(.*?)\*\*/g, "$1").replace(/__(.*?)__/g, "$1").trim();
+  return cleanResponse(text);
+}
+
+export function normalizeIndicQuery(text: string): string {
+  let q = text.toLowerCase();
+  const replacements: Array<[RegExp, string]> = [
+    [/\b(kashi|kasa|kase|kashya|kiti|kuthe|kay|kashala)\b/g, "how what"],
+    [/\b(ka|kashamule)\b/g, "why"],
+    [/\b(banvaychi|banvaycha|banvava|banvave|karnar|karaycha|karaychi)\b/g, "make start create"],
+    [/\b(pahije|lagte|lagto|lagtat|hawa|havi)\b/g, "need required use"],
+    [/\b(shiku|shikaycha|shikaychi)\b/g, "learn start"],
+    [/\b(suruvat|suru)\b/g, "start begin"],
+    [/\b(nantar)\b/g, "next after"],
+    [/\b(chook|chukle|durust)\b/g, "mistake error fix correct"],
+    [/\b(sutla|sutle|sutli)\b/g, "drop dropped slip"],
+    [/\b(taan|khatin)\b/g, "tight tension"],
+    [/\b(sail|dheela)\b/g, "loose"],
+    [/\b(sui|suya|suyanche|suyanna)\b/g, "needle needles"],
+    [/\b(crosha|krosha)\b/g, "crochet hook needle"],
+    [/\b(lokar|lokricha|lokriche)\b/g, "wool yarn"],
+    [/\b(dhaga|dora)\b/g, "thread yarn"],
+    [/\b(gaath|gath|gaanth)\b/g, "slip knot knot"],
+    [/\b(taka|take|takyanna|takya)\b/g, "stitch stitches loop"],
+    [/\b(fanda|fande)\b/g, "stitch loop cast on"],
+    [/\b(ol|oli)\b/g, "row rows"],
+    [/\b(vinane|vinun|vinat)\b/g, "knit knitting"],
+    [/\b(saral|sidha|seedha)\b/g, "knit stitch"],
+    [/\b(ulti|ulta)\b/g, "purl stitch"],
+    [/\b(farak|bhed)\b/g, "difference"],
+  ];
+  for (const [pattern, replacement] of replacements) {
+    q = q.replace(pattern, replacement);
+  }
+  return q;
 }
 
 /**
@@ -37,7 +153,10 @@ export function generateLocalAnswer(
   language: Language = "en",
   videoId?: string | null
 ): { answer: string; isGrounded: boolean } {
-  const qLower = question.toLowerCase().trim();
+  const effectiveLanguage = detectLanguage(question, language);
+  language = effectiveLanguage;
+  const rawLower = question.toLowerCase().trim();
+  const qLower = normalizeIndicQuery(rawLower);
 
   const combinedContext = chunks && chunks.length > 0 ? chunks.map((c) => c.chunk.content.toLowerCase()).join(" ") : "";
   const isDemoContext =
@@ -48,9 +167,12 @@ export function generateLocalAnswer(
     combinedContext.includes("running stitch");
 
   // ==========================================
-  // 0. LANGUAGE REQUESTS (Hindi / Marathi)
+  // 0. EXPLICIT LANGUAGE REQUESTS (Hindi / Marathi Overview)
   // ==========================================
-  if (qLower.includes("marathi") || qLower.includes("मराठी")) {
+  if (
+    (rawLower.includes("explain this in marathi") || rawLower.includes("मराठीत सांगा") || rawLower === "can you explain this in marathi?") &&
+    !["slip", "knit", "purl", "cast", "needle", "yarn"].some((k) => rawLower.includes(k))
+  ) {
     const answer =
       "विणकामात दोन सुया आणि लोकर वापरून लूप्स (टाके) तयार करून कापड बनवले जाते.\n" +
       "- प्रथम स्लिप नॉट बांधून सुईवर टाके घाला (Casting on).\n" +
@@ -59,7 +181,10 @@ export function generateLocalAnswer(
     return { answer: stripBold(answer), isGrounded: true };
   }
 
-  if (qLower.includes("hindi") || qLower.includes("हिंदी")) {
+  if (
+    (rawLower.includes("explain this in hindi") || rawLower.includes("हिंदी में बताएं") || rawLower === "can you explain this in hindi?") &&
+    !["slip", "knit", "purl", "cast", "needle", "yarn"].some((k) => rawLower.includes(k))
+  ) {
     const answer =
       "बुनाई में दो सिलाइयों और धागे की मदद से फंदे बनाकर कपड़ा तैयार किया जाता है।\n" +
       "- सबसे पहले एक स्लिप नॉट बनाकर सिलाई पर फंदे डालें (Casting on)।\n" +
@@ -67,6 +192,7 @@ export function generateLocalAnswer(
       "- फंदों को ज्यादा कसकर न खींचें, एक समान तनाव रखने से बुनाई साफ और सुंदर बनती है।";
     return { answer: stripBold(answer), isGrounded: true };
   }
+
 
   // ==========================================
   // 1. "WHAT IS THE DIFFERENCE?" QUESTIONS
@@ -580,7 +706,7 @@ export function generateLocalAnswer(
     qLower.includes("guide me")
   ) {
     const answer =
-      "Welcome to knitting! Here is the best beginner learning path:\n" +
+      "Here is the best beginner learning path for knitting:\n" +
       "1. Learn how to make a slip knot (Lesson 3 & 6).\n" +
       "2. Practice casting on 15 to 20 stitches onto your needle (Lesson 6).\n" +
       "3. Master the knit stitch row by row (Lesson 4).\n" +
@@ -680,43 +806,199 @@ export function generateLocalAnswer(
 /**
  * Creates a clear, concise summary in simple English if a custom topic match isn't triggered.
  */
-function buildDynamicSummary(content: string): string {
+function buildDynamicSummary(content: string, language: Language = "en"): string {
   const cLower = content.toLowerCase();
   if (cLower.includes("running stitch") || cLower.includes("half-inch")) {
-    return "In the demo lesson, a running stitch is used along the edges at half-inch intervals with a crochet needle to secure the center panel.";
+    return language === "mr"
+      ? "डेमो पाठात क्रोशा सुई वापरून मध्यवर्ती पट्टीच्या कडांवर अर्ध्या इंचाच्या अंतरावर धावदोरा (रनिंग स्टिच) घातला जातो."
+      : "In the demo lesson, a running stitch is used along the edges at half-inch intervals with a crochet needle to secure the center panel.";
   }
   if (cLower.includes("center panel") || cLower.includes("crochet")) {
-    return "In the demo lecture, you measure thread leaving 1 to 1.5 inches extra, use a crochet needle, place the braided ridge lines on the front, and weave running stitches at half-inch intervals.";
+    return language === "mr"
+      ? "डेमो पाठात धागा मोजताना 1 ते 1.5 इंच जास्त ठेवावा, क्रोशा सुई वापरावी आणि वेणीसारखी नक्षी समोर ठेवून अर्ध्या इंचाच्या अंतरावर धावदोरा घालावा."
+      : "In the demo lecture, you measure thread leaving 1 to 1.5 inches extra, use a crochet needle, place the braided ridge lines on the front, and weave running stitches at half-inch intervals.";
   }
   if (content.includes("creative skill")) {
-    return "Knitting is a creative craft using yarn and needles to make items like sweaters, scarves, caps, and bags, while fostering patience and creativity.";
+    return language === "mr"
+      ? "विणकाम ही सुया आणि धाग्यांच्या साहाय्याने स्वेटर, मफलर, टोप्या आणि पिशव्या बनवण्याची एक कला आहे, ज्यामुळे एकाग्रता वाढते."
+      : "Knitting is a creative craft using yarn and needles to make items like sweaters, scarves, caps, and bags, while fostering patience and creativity.";
   }
   if (content.includes("Material Knowledge")) {
-    return "Material knowledge in knitting involves understanding how to choose the right yarn (wool vs cotton), needles, and accessories to produce durable, high-quality items.";
+    return language === "mr"
+      ? "विणकामासाठी योग्य लोकर (लोकर वि. कॉटन), सुया आणि इतर साहित्याची योग्य निवड समजून घेणे आवश्यक आहे."
+      : "Material knowledge in knitting involves understanding how to choose the right yarn (wool vs cotton), needles, and accessories to produce durable, high-quality items.";
   }
   if (content.includes("slip knot")) {
-    return "Knitting begins by forming a slip knot loop on one needle, inserting the second needle, and drawing yarn through to create connected loops.";
+    return language === "mr"
+      ? "विणकामाची सुरुवात एका सुईवर स्लिप नॉट बांधून, दुसरी सुई घालून आणि धागा ओढून नवीन लूप्स तयार करण्याने होते."
+      : "Knitting begins by forming a slip knot loop on one needle, inserting the second needle, and drawing yarn through to create connected loops.";
   }
   if (content.includes("present and share")) {
-    return "Presenting knitted creations neatly and sharing them at exhibitions or online helps showcase your craftsmanship to others.";
+    return language === "mr"
+      ? "विणलेल्या सुंदर वस्तू प्रदर्शनात किंवा ऑनलाईन शेअर केल्याने तुमच्या कलेला दाद मिळते."
+      : "Presenting knitted creations neatly and sharing them at exhibitions or online helps showcase your craftsmanship to others.";
   }
-  return "The lesson emphasizes understanding your materials, keeping stitches even, and practicing slowly to produce strong, attractive knitted fabric.";
+  return language === "mr"
+    ? "अभ्यासक्रमातील माहितीनुसार, योग्य साहित्य निवडून आणि टाके एकसारखे ठेवून शांतपणे विणण्याचा सराव करावा."
+    : "The lesson emphasizes understanding your materials, keeping stitches even, and practicing slowly to produce strong, attractive knitted fabric.";
 }
 
-function localizeAnswer(text: string, language: Language): string {
-  const cleaned = stripBold(text);
-  if (language === "hi") {
-    return `पाठ्यक्रम सामग्री के अनुसार (सरल शब्दों में):\n\n${cleaned}`;
+export function translateToMarathi(enText: string): string {
+  const lower = enText.toLowerCase();
+
+  if (lower.includes("slip knot") && (lower.includes("adjustable") || lower.includes("step") || lower.includes("form a") || lower.includes("simple loop") || lower.includes("yarn"))) {
+    return (
+      "स्लिप नॉट बनवण्याची पद्धत:\n" +
+      "1. लोकरीचा एक साधा लूप तयार करा.\n" +
+      "2. लूपमधून चालू धागा ओढून एक सरकणारी गाठ बनवा.\n" +
+      "3. ही गाठ सुईवर अडकवा आणि धाग्याची टोके हलकेच ओढून व्यवस्थित बसवा. टाका सुईवर सहज सरकेल इतका सैल ठेवा."
+    );
   }
+
+  if (lower.includes("knit stitch") && lower.includes("purl stitch") && (lower.includes("fundamental") || lower.includes("difference") || lower.includes("two"))) {
+    return (
+      "सुलट टाका (Knit stitch) आणि उलटा टाका (Purl stitch) हे विणकामातील दोन मूलभूत टाके आहेत:\n" +
+      "- सुलट टाका: धागा मागच्या बाजूला धरून विणला जातो, ज्यामुळे समोरच्या बाजूला 'V' आकाराचे गुळगुळीत टाके दिसतात.\n" +
+      "- उलटा टाका: धागा पुढच्या बाजूला धरून विणला जातो, ज्यामुळे आडवे खडबडीत उंचवटे (बम्प्स) तयार होतात.\n" +
+      "हे दोन्ही टाके आलटून-पालटून विणल्याने सुंदर रिबिंग आणि डिझाइन्स तयार होतात."
+    );
+  }
+
+  if (lower.includes("knit stitch") && (lower.includes("insert") || lower.includes("step") || lower.includes("wrap") || lower.includes("v-shape") || lower.includes("hold"))) {
+    return (
+      "सुलट टाका (Knit stitch) विणण्याची पद्धत:\n" +
+      "1. डाव्या हातातील सुईवर टाके ठेवा आणि चालू धागा नेहमी पाठीमागे ठेवा.\n" +
+      "2. उजवी सुई टाक्यात समोरून मागे (खालून वर) घाला.\n" +
+      "3. धागा उजव्या सुईभोवती घड्याळाच्या विरुद्ध दिशेने फिरवा.\n" +
+      "4. नवीन लूप बाहेर ओढा आणि डाव्या सुईवरील जुना टाका अलगद खाली सरकवा."
+    );
+  }
+
+  if (lower.includes("purl stitch") && (lower.includes("insert") || lower.includes("step") || lower.includes("front") || lower.includes("bump") || lower.includes("hold"))) {
+    return (
+      "उलटा टाका (Purl stitch) विणण्याची पद्धत:\n" +
+      "1. डाव्या सुईवर टाके धरा आणि चालू धागा नेहमी पुढच्या बाजूला ठेवा.\n" +
+      "2. उजवी सुई टाक्यात पुढून पाठीमागच्या दिशेने घाला.\n" +
+      "3. धागा उजव्या सुईभोवती फिरवून नवीन लूप बाहेर काढा.\n" +
+      "4. डाव्या सुईवरील जुना टाका अलगद खाली सरकवून नवीन उलटा टाका पूर्ण करा."
+    );
+  }
+
+  if (lower.includes("cast on") || lower.includes("casting on") || lower.includes("foundation")) {
+    return (
+      "टाके घालण्याची (Casting on) पद्धत:\n" +
+      "1. प्रथम एक स्लिप नॉट बांधून सुईवर पहिला टाका म्हणून चढवा.\n" +
+      "2. दुसऱ्या सुईने त्या टाक्यातून नवीन लूप विणून बाहेर काढा.\n" +
+      "3. हा नवीन लूप पुन्हा डाव्या सुईवर चढवा.\n" +
+      "4. तुम्हाला हव्या तितक्या टाक्यांची पायाभूत ओळ तयार होईपर्यंत ही कृती पुन्हा करा."
+    );
+  }
+
+  if (lower.includes("drop") && lower.includes("stitch")) {
+    return (
+      "जर एखादा टाका सुईवरून निसटला, तर घाबरू नका. तो निसटलेला लूप बोटाने किंवा क्रोशा सुईने लगेच पकडा. वरचा धागा त्या लूपमधून बाहेर ओढून टाका पुन्हा दुरुस्त करा आणि डाव्या सुईवर चढवा."
+    );
+  }
+
+  if (lower.includes("tink") || lower.includes("undo") || (lower.includes("mistake") && lower.includes("correct"))) {
+    return (
+      "विणकाम न मोडता चूक दुरुस्त करण्यासाठी एकेक टाका उलटा सोडवा (Tinking). उजव्या सुईवरील टाक्याच्या खालच्या लूपमध्ये डावी सुई समोरून मागे घाला, चालू धागा हलकेच ओढा आणि तो टाका पुन्हा डाव्या सुईवर घ्या."
+    );
+  }
+
+  if (lower.includes("tight") && (lower.includes("needle") || lower.includes("stitch") || lower.includes("stuck"))) {
+    return (
+      "टाके खूप घट्ट होऊन सुई अडकत असल्यास, तुम्ही धागा जास्त जोराने ओढत आहात. हाताची पकड सैल ठेवा, टाके सुईच्या टोकावर न विणता सुईच्या जाड भागावर सरकवून हलक्या हाताने विणा."
+    );
+  }
+
+  if (lower.includes("loose") && (lower.includes("stitch") || lower.includes("tension"))) {
+    return (
+      "धागा सैल सोडल्यामुळे टाके खूप मोठे आणि सैल होतात. विणताना चालू धागा तुमच्या तर्जनीवर (पहिल्या बोटावर) हलका गुंडाळून ठेवा, ज्यामुळे प्रत्येक टाक्याला एकसमान ताण मिळेल."
+    );
+  }
+
+  if (lower.includes("needle") && (lower.includes("size") || lower.includes("two") || lower.includes("pair") || lower.includes("wood") || lower.includes("metal"))) {
+    return (
+      "विणकामासाठी सामान्यतः दोन सुया लागतात. मध्यम जाडीच्या लोकरीसाठी 4 मिमी ते 5 मिमी (US 6 ते 8) आकाराच्या सुया नवशिक्यांसाठी उत्तम असतात. सुईचा अचूक आकार लोकरीच्या लेबलवर दिलेला असतो."
+    );
+  }
+
+  if (lower.includes("yarn") || lower.includes("wool") || lower.includes("cotton") || lower.includes("acrylic")) {
+    return (
+      "नवीन शिकणाऱ्यांसाठी मध्यम जाडीची आणि फिकट रंगाची लोकर उत्तम असते, कारण फिकट रंगात प्रत्येक टाका स्पष्ट दिसतो. लोकर मऊ आणि लवचिक असल्याने शिकण्यासाठी सर्वात सोपी आहे."
+    );
+  }
+
+  if (lower.includes("crochet") || lower.includes("running stitch") || lower.includes("center panel")) {
+    return (
+      "डेमो पाठात क्रोशा सुई वापरून मध्यवर्ती पट्टीच्या कडांवर अर्ध्या इंचाच्या अंतरावर धावदोरा (रनिंग स्टिच) घातला जातो. धागा मोजताना 1 ते 1.5 इंच जास्त ठेवावा आणि वेणीसारखी नक्षी समोर ठेवून विणावे."
+    );
+  }
+
+  if (lower.includes("hold") && lower.includes("needle")) {
+    return (
+      "टाके असलेली सुई डाव्या हातात आणि रिकामी सुई उजव्या हातात पेन्सिलप्रमाणे किंवा चाकू पकडल्यासारखी हलकी धरा. मनगट आणि बोटे सैल ठेवून आरामात विणकाम करा."
+    );
+  }
+
+  if (lower.includes("increase") || lower.includes("kfb")) {
+    return (
+      "टाके वाढवण्यासाठी एकाच टाक्याच्या पुढच्या भागातून विणा आणि तो न सोडवता त्याच टाक्याच्या मागच्या भागातून पुन्हा विणा (KFB पद्धत). यामुळे एका टाक्याचे दोन टाके होतात."
+    );
+  }
+
+  if (lower.includes("decrease") || lower.includes("k2tog")) {
+    return (
+      "टाके कमी करण्यासाठी उजवी सुई डाव्या सुईवरील दोन टाक्यांत एकदम घाला आणि दोन्ही टाके एकत्र विणा (K2tog पद्धत). यामुळे दोन टाक्यांचा एक टाका होतो."
+    );
+  }
+
+  if (lower.includes("bind off") || lower.includes("cast off") || lower.includes("finish")) {
+    return (
+      "प्रकल्प पूर्ण करण्यासाठी (Bind off):\n" +
+      "1. उजव्या सुईवर दोन टाके विणा.\n" +
+      "2. डाव्या सुईने पहिला टाका दुसऱ्या टाक्यावरून उचलून सुईच्या बाहेर काढा.\n" +
+      "3. आणखी एक टाका विणा आणि मागचा टाका पुन्हा वरून बाहेर काढा.\n" +
+      "4. शेवटचा एक लूप उरेपर्यंत ही कृती करा, धागा कापून लूपमधून ओढून पक्का करा."
+    );
+  }
+
+  if (lower.includes("what is knitting") || lower.includes("creative craft")) {
+    return (
+      "विणकाम ही सुया आणि धाग्याच्या साहाय्याने एकमेकात गुंतलेले लूप्स तयार करून कापड बनवण्याची एक कला आहे. यातून स्वेटर, मफलर, टोप्या आणि इतर सुंदर वस्तू बनवता येतात."
+    );
+  }
+
+  if (lower.includes("learning path") || lower.includes("beginner")) {
+    return (
+      "विणकाम शिकण्याचा सर्वात सोपा मार्ग:\n" +
+      "1. प्रथम सुया आणि लोकरीची माहिती समजून घ्या (पाठ 2).\n" +
+      "2. स्लिप नॉट बांधण्याचा सराव करा (पाठ 3).\n" +
+      "3. सुईवर पायाभूत टाके घाला - कास्टिंग ऑन (पाठ 6).\n" +
+      "4. सुलट टाका (पाठ 4) आणि उलटा टाका (पाठ 5) विणण्याचा सराव करा."
+    );
+  }
+
+  return (
+    "अभ्यासक्रमातील माहितीनुसार, योग्य सुया आणि लोकर निवडून हलक्या हाताने विणकाम सुरू करावे. टाके एकसारखे ठेवून हळूहळू सराव केल्यास विणकाम मजबूत आणि आकर्षक बनते."
+  );
+}
+
+function localizeAnswer(enText: string, language: Language, mrText?: string): string {
   if (language === "mr") {
-    return `अभ्यासक्रम माहितीनुसार (सोप्या भाषेत):\n\n${cleaned}`;
+    if (mrText) return cleanResponse(mrText);
+    return cleanResponse(translateToMarathi(enText));
   }
-  return cleaned;
+  if (language === "hi") {
+    return cleanResponse(`पाठ्यक्रम सामग्री के अनुसार:\n\n${enText}`);
+  }
+  return cleanResponse(enText);
 }
 
 /**
  * Calls Google Gemini API with the retrieved RAG context.
- * Strictly enforces concise, simple plain text without bold formatting.
+ * Strictly enforces concise, simple plain text without bold formatting or welcome greetings.
  */
 async function callGeminiApi(
   question: string,
@@ -738,25 +1020,40 @@ async function callGeminiApi(
           .join("\n\n")
       : "No direct course lesson transcript matched this query.";
 
-  const langStr = language === "hi" ? "Hindi" : language === "mr" ? "Marathi" : "English";
+  const prompt = `You are an expert, friendly craft learning assistant.
+Answer the user's question clearly, accurately, and concisely.
 
-  const prompt = `You are an expert, friendly craft learning assistant for the Takshashila platform.
-Answer the user's question clearly, accurately, and concisely in simple plain English (or in ${langStr}).
+CRITICAL RULES (STRICT COMPLIANCE):
+1. ZERO WELCOME GREETINGS OR BRANDING:
+   - NEVER say "Welcome to Takshashila", "Welcome to...", or use introductory welcome greetings.
+   - Do NOT mention the platform name.
+   - Jump directly into the factual, helpful answer.
 
-ANSWERING STRATEGY (CRITICAL):
-1. STEP 1 - CHECK COURSE DATASET FIRST:
-   Check the COURSE CONTEXT below. If the answer is covered in the course material (such as the demo video on center panel stitching with a crochet needle, measuring 1 to 1.5 inches extra, identifying braided ridges, running stitches at half-inch intervals, or Lessons 1 to 6 covering materials, wool vs cotton, slip knots, knit stitch, purl stitch, and casting on), base your answer directly on that course instruction.
+2. LANGUAGE & SCRIPT INSTRUCTION (CRITICAL):
+   - If the user asks in Marathi (whether in Marathi Devanagari script OR Romanized Marathi typed with English alphabet such as 'kuthla ranga pink sobat jail', 'slip knot kashi banvaychi?', 'purl stitch kasa karaycha?', 'suya kiti lagtat?', 'vinane kase shiku?'):
+     YOU MUST WRITE THE ENTIRE ANSWER IN PROPER MARATHI IN DEVANAGARI SCRIPT (मराठी देवनागरी लिपी).
+     Do NOT write in English. Do NOT write in English alphabet.
+     Use fluent, authentic, polite Marathi sentences in Devanagari script.
+   - SCRIPT PURITY:
+     STRICTLY use standard Devanagari characters (देवनागरी) and authentic Marathi words (e.g. write 'ग्रे' or 'राखाडी' for grey, 'पांढरा' for white, 'गुलाबी' for pink).
+     NEVER output Korean (Hangul), Greek (like γκ), Cyrillic, or any glitched foreign alphabet characters under any circumstances.
+   - If the user asks in English:
+     Write the entire answer in simple, concise English.
+   - If the user asks in Hindi:
+     Write the entire answer in clear Hindi in Devanagari script.
 
-2. STEP 2 - INTERNET / GENERAL KNOWLEDGE FALLBACK:
-   If the answer is NOT in the course dataset, or if the user asks a broader question (like general craft techniques, comparing facts from the internet, project measurements, needle standards, fabric care, or troubleshooting errors), use accurate general knowledge from the internet to answer it directly. Never say "I don't know" or "information not available". Always provide a helpful, factual answer.
+3. ANSWERING STRATEGY:
+   - STEP 1 - CHECK COURSE DATASET FIRST:
+     Check the COURSE CONTEXT below. If covered (video demo, measuring 1 to 1.5 inches extra, braided ridges, running stitch with crochet needle, or Lessons 1 to 6 on materials, slip knots, knit stitch, purl stitch, casting on), base your answer directly on that course instruction.
+   - STEP 2 - INTERNET / GENERAL KNOWLEDGE FALLBACK:
+     If the answer is NOT in the course dataset, or if the user asks a broader craft question, use accurate general internet knowledge. Never say "I don't know" or "information not available".
+   - STEP 3 - FACT COMPARISON & INSIGHT:
+     When helpful, briefly compare standard internet facts or craft practices with the simplest beginner technique.
 
-3. STEP 3 - FACT COMPARISON & INSIGHT:
-   When helpful, briefly compare standard internet facts or general craft practices with the simplest beginner technique.
-
-STRICT FORMATTING & STYLE:
-- ZERO BOLD FORMATTING: NEVER use ** or __ around any word. All text must be clean, plain text.
-- SHORT & CONCISE: Limit the entire answer to 2 to 4 short, easy-to-read sentences or short unbolded bullet points.
-- SIMPLE & ACCESSIBLE: Avoid overly complex technical jargon. Write in simple, warm words for beginners.
+4. STRICT FORMATTING & STYLE:
+   - ZERO BOLD FORMATTING: NEVER use ** or __ around any word. All text must be clean, plain text.
+   - SHORT & CONCISE: Limit the entire answer to 2 to 4 short sentences or concise unbolded bullet points.
+   - SIMPLE & ACCESSIBLE: Avoid overly complex technical jargon.
 
 COURSE CONTEXT:
 ${contextText}
@@ -796,7 +1093,7 @@ ${question}`;
       if (res.ok) {
         const data = await res.json();
         const generated = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (generated) return stripBold(generated);
+        if (generated) return cleanResponse(generated);
       }
     } catch {
       // try next model or fallback
@@ -805,7 +1102,6 @@ ${question}`;
 
   return null;
 }
-
 
 export async function generateRAGAnswer(
   question: string,
@@ -816,13 +1112,15 @@ export async function generateRAGAnswer(
   let answer: string | null = null;
   let isGrounded = true;
 
+  const effectiveLanguage = detectLanguage(question, language);
+
   // 1. Attempt Gemini LLM generation if API key is provided
   const apiKey =
     (import.meta as any).env?.VITE_GEMINI_API_KEY ||
     (globalThis as any).process?.env?.VITE_GEMINI_API_KEY;
 
   if (apiKey && apiKey !== "your_actual_gemini_api_key_here") {
-    answer = await callGeminiApi(question, retrievedChunks, language);
+    answer = await callGeminiApi(question, retrievedChunks, effectiveLanguage);
     if (answer === NOT_AVAILABLE_MESSAGE) {
       isGrounded = false;
     }
@@ -830,13 +1128,13 @@ export async function generateRAGAnswer(
 
   // 2. If no API key or API call failed, run verified local grounded generator
   if (!answer) {
-    const localResult = generateLocalAnswer(question, retrievedChunks, language, videoId);
+    const localResult = generateLocalAnswer(question, retrievedChunks, effectiveLanguage, videoId);
     answer = localResult.answer;
     isGrounded = localResult.isGrounded;
   }
 
-  // Guarantee clean plain text without any bold markdown
-  answer = stripBold(answer);
+  // Guarantee clean plain text without any bold markdown or welcome greetings
+  answer = cleanResponse(answer);
 
   const sources: RAGSource[] = [];
   if (isGrounded) {
@@ -855,12 +1153,24 @@ export async function generateRAGAnswer(
   }
 
   const relevantQuestions = isGrounded
-    ? generateRelevantQuestions(question, retrievedChunks, videoId)
-    : [
-        "What is knitting?",
-        "What materials are required?",
-        "How do I start knitting?",
-      ];
+    ? (effectiveLanguage === "mr"
+        ? [
+            "स्लिप नॉट कशी बनवायची?",
+            "सुलट आणि उलटा टाका कसा विणायचा?",
+            "नवशिक्यांसाठी कोणत्या सुया आणि लोकर योग्य आहेत?",
+          ]
+        : generateRelevantQuestions(question, retrievedChunks, videoId))
+    : (effectiveLanguage === "mr"
+        ? [
+            "विणकाम कसे सुरू करावे?",
+            "कोणते साहित्य आवश्यक आहे?",
+            "स्लिप नॉट कशी बांधावी?",
+          ]
+        : [
+            "What is knitting?",
+            "What materials are required?",
+            "How do I start knitting?",
+          ]);
 
   const confidence = isGrounded && retrievedChunks.length > 0 ? retrievedChunks[0].score : 0;
 

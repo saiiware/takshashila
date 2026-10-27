@@ -173,7 +173,7 @@ export default function AIAssistantPanel({
         {messages.length === 0 && (
           <div className="space-y-3 rounded-card bg-workshop-50/70 p-4 border border-workshop-200">
             <p className="text-sm text-ink/80 leading-relaxed">
-              <strong>Ask questions or upload a photo of your work!</strong> Use the camera upload below to send an image of your <strong>slip knot</strong>, <strong>yarn</strong> (wool vs cotton), or <strong>needles</strong> (metal vs wood) for an instant check.
+              <strong>Ask questions by typing, speaking (🎙️ English / मराठी), or uploading a photo!</strong> Use the microphone to ask voice questions in English or Marathi, or use camera upload to check your <strong>slip knot</strong>, <strong>yarn</strong>, or <strong>needles</strong>.
             </p>
 
             <div className="pt-1">
@@ -219,6 +219,7 @@ export default function AIAssistantPanel({
           onMicPress={handleMicPress}
           isRecording={isRecording}
           isSending={isSending}
+          preferredLanguage={user?.preferredLanguage === "mr" ? "mr" : "en"}
         />
       </div>
     </div>

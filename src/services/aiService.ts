@@ -1,4 +1,4 @@
-import type { AskAIRequest, AskAIResponse, VisionAssessment } from "@/types";
+import type { AskAIRequest, AskAIResponse, Language, VisionAssessment } from "@/types";
 import { queryRAG } from "@/rag";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -292,8 +292,24 @@ function fallbackClientVisionAnalysis(fileName: string, prompt: string): VisionA
  * Speech transcription helper.
  * Provides voice transcription sample queries matching current lesson context.
  */
-export async function transcribeSpeech(videoId?: string | null): Promise<string> {
+export async function transcribeSpeech(
+  videoId?: string | null,
+  language: Language = "en"
+): Promise<string> {
   await delay(500);
+
+  if (language === "mr") {
+    if (videoId?.includes("3")) {
+      return "सुया वापरून स्लिप नॉट आणि पहिला टाका कसा बनवायचा?";
+    }
+    if (videoId?.includes("2")) {
+      return "लोकर आणि सुती धाग्यात काय फरक आहे?";
+    }
+    if (videoId?.includes("0")) {
+      return "मध्य पॅनेल मोजताना किती अतिरिक्त धागा सोडावा?";
+    }
+    return "विणकाम सुरू करण्यासाठी कोणती साधने आवश्यक आहेत?";
+  }
 
   if (videoId?.includes("0")) {
     return "How much extra thread should I leave when measuring the center panel?";

@@ -1,4 +1,6 @@
-"""Evaluation test script for all photos in data/images and sample_images."""
+"""Evaluation test script for all photos in data/images and sample_images,
+including automated tests for wrong / unrelated image detection.
+"""
 
 import io
 import sys
@@ -11,16 +13,18 @@ root_dir = Path(__file__).resolve().parent
 if str(root_dir) not in sys.path:
     sys.path.insert(0, str(root_dir))
 
-from rag_python.vision_inspector import inspect_image_file
+from rag_python.vision_inspector import inspect_image_file, inspect_image
 
 
 def run_evaluations():
-    dirs_to_check = [root_dir / "data" / "images", root_dir / "sample_images"]
+    dirs_to_check = [root_dir / "data" / "images", root_dir / "sample_images", root_dir / "public" / "sample_images"]
+    seen_names = set()
     all_images = []
     for d in dirs_to_check:
         if d.is_dir():
             for f in sorted(d.glob("*")):
-                if f.suffix.lower() in (".jpg", ".jpeg", ".png", ".webp"):
+                if f.suffix.lower() in (".jpg", ".jpeg", ".png", ".webp", ".svg") and f.name not in seen_names:
+                    seen_names.add(f.name)
                     all_images.append(f)
 
     print("===================================================================")
@@ -32,7 +36,13 @@ def run_evaluations():
         print(f"[{idx}/{len(all_images)}] Target: {img_path.name}")
         try:
             res = inspect_image_file(str(img_path))
-            status_tag = "[PASS] CORRECT" if res.status == "correct" else "[ATTENTION] NEEDS ADJUSTMENT"
+            if res.status == "correct":
+                status_tag = "[PASS] CORRECT"
+            elif res.status == "invalid":
+                status_tag = "[ALERT] WRONG / UNRELATED IMAGE DETECTED"
+            else:
+                status_tag = "[ATTENTION] NEEDS ADJUSTMENT"
+
             print(f"   Category:        {res.category.upper()}")
             print(f"   Status:          {status_tag} (Score: {res.score}/10)")
             print(f"   Title:           {res.title}")
@@ -45,7 +55,35 @@ def run_evaluations():
             print(f"   [Error evaluating image]: {e}")
             print("-" * 65)
 
+    print("\n===================================================================")
+    print("      Testing Wrong Image / Unrelated Subject Detection Scenarios   ")
+    print("===================================================================")
+
+    dummy_bytes = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15c4"
+
+    wrong_image_tests = [
+        ("car_photo.jpg", "Please inspect this photo of my red sports car", "car"),
+        ("golden_retriever_dog.png", "Check my pet puppy", "dog"),
+        ("pepperoni_pizza.jpg", "Here is my food dinner", "pizza"),
+        ("selfie_camera.png", "Inspect my new haircut selfie", "selfie"),
+        ("smartphone_receipt.jpg", "Check this invoice document", "receipt"),
+        ("random_mountain_view.png", "Landscape scenery photo", "landscape"),
+    ]
+
+    for idx, (fname, prompt, expected_kw) in enumerate(wrong_image_tests, 1):
+        combined = f"{prompt} (File: {fname})"
+        res = inspect_image(dummy_bytes, "image/png", combined)
+        status_pass = res.status == "invalid" and res.category == "invalid_image"
+        status_str = "[PASS] CORRECTLY FLAGGED AS WRONG IMAGE" if status_pass else "[FAIL] WRONGLY ACCEPTED"
+        print(f"[TEST {idx}/{len(wrong_image_tests)}] Input: '{fname}' | Prompt: '{prompt}'")
+        print(f"   Result:       {status_str}")
+        print(f"   Category:     {res.category}")
+        print(f"   Status:       {res.status} (Score: {res.score})")
+        print(f"   Title:        {res.title}")
+        print(f"   Feedback:     {res.feedback[:100]}…")
+        print(f"   Solution:     {res.solution[:100]}…")
+        print("-" * 65)
+
 
 if __name__ == "__main__":
     run_evaluations()
-

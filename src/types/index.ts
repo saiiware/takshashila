@@ -57,9 +57,17 @@ export interface RAGSource {
   score: number;
 }
 
+export interface VisionMetrics {
+  edgeDensity?: number;
+  warmthScore?: number;
+  specularRatio?: number;
+  tensionEstimate?: "optimal" | "tight" | "loose" | "unknown";
+  needleAngle?: number;
+}
+
 export interface VisionAssessment {
-  category: "slip_knot" | "yarn" | "needle" | "general";
-  status: "correct" | "needs_improvement" | "unclear";
+  category: "slip_knot" | "yarn" | "needle" | "general" | "invalid_image";
+  status: "correct" | "needs_improvement" | "unclear" | "invalid";
   title: string;
   score: number;
   detected_items: string[];
@@ -68,6 +76,9 @@ export interface VisionAssessment {
   lesson_reference: string;
   confidence: number;
   sources?: RAGSource[];
+  metrics?: VisionMetrics;
+  isWrongImage?: boolean;
+  rejectionReason?: string;
 }
 
 export interface ChatMessage {

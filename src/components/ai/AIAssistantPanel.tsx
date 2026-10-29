@@ -3,7 +3,6 @@ import type { ChatMessage, RAGSource } from "@/types";
 import { askAI, assessKnittingPhoto, transcribeSpeech } from "@/services/aiService";
 import { useAuth } from "@/context/AuthContext";
 import { MOCK_COURSE } from "@/data/mockData";
-import { getSuggestedQuestions } from "@/rag";
 import ChatBubble from "./ChatBubble";
 import ChatInput, { type ChatImageAttachment } from "./ChatInput";
 
@@ -18,7 +17,6 @@ function makeMessage(
   text: string,
   videoContextId?: string | null,
   sources?: RAGSource[],
-  relevantQuestions?: string[],
   imageUrl?: string,
   imageFileName?: string
 ): ChatMessage {
@@ -29,7 +27,6 @@ function makeMessage(
     createdAt: new Date().toISOString(),
     videoContextId,
     sources,
-    relevantQuestions,
     imageUrl,
     imageFileName,
   };
@@ -55,8 +52,6 @@ export default function AIAssistantPanel({
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, isSending]);
 
-  const starterQuestions = getSuggestedQuestions(videoId);
-
   const handleSendMessage = async (text: string, image?: ChatImageAttachment) => {
     setIsSending(true);
 
@@ -68,7 +63,6 @@ export default function AIAssistantPanel({
         promptText,
         videoId,
         undefined,
-        undefined,
         image.dataUrl,
         image.fileName
       );
@@ -77,30 +71,44 @@ export default function AIAssistantPanel({
 
       try {
         const assessment = await assessKnittingPhoto(image.dataUrl, image.fileName, promptText);
+        
+        const isWrongImage =
+          assessment.status === "invalid" ||
+          assessment.category === "invalid_image" ||
+          assessment.isWrongImage === true;
+
+        let chatbotResponseText = "";
+        const lang = user?.preferredLanguage ?? "en";
+
+        if (isWrongImage) {
+          if (lang === "hi") {
+            chatbotResponseText =
+              "⚠️ **गलत छवि अपलोड की गई (Wrong Image)**: अपलोड की गई तस्वीर में बुनाई की सामग्री या अभ्यास (जैसे स्लिप नॉट, ऊन/सूती धागा, या सलाई) नहीं दिखाई दे रही है।\n\nकृपया अपनी बुनाई तकनीक का मूल्यांकन कराने के लिए पाठ 2 और 3 से संबंधित अपनी स्लिप नॉट (सलाई पर), धागे की गिट्टी, या बुनाई की सलाई की स्पष्ट फोटो अपलोड करें।";
+          } else if (lang === "mr") {
+            chatbotResponseText =
+              "⚠️ **चुकीचा फोटो अपलोड केला (Wrong Image)**: आपण अपलोड केलेल्या फोटोमध्ये विणकामाचे साहित्य किंवा तंत्र (उदा. स्लिप नॉट, लोकर/सुती धागा किंवा विणकामाच्या सुया) दिसत नाही.\n\nकृपया आपले काम तपासण्यासाठी धडा 2 आणि 3 मधील स्लिप नॉट (सुईवर), लोकर किंवा विणकामाच्या सुयांचा स्पष्ट फोटो अपलोड करा!";
+          } else {
+            chatbotResponseText =
+              "⚠️ **Wrong Image Uploaded**: The photo you uploaded does not appear to show knitting materials or techniques. Our Computer Vision engine could not detect any slip knot loops, yarn (wool/cotton), or knitting needles.\n\nPlease upload a clear photo of your slip knot on the needle (Lesson 3), yarn ball/skein (Lesson 2), or knitting needles (Lesson 2) so I can evaluate your work!";
+          }
+        } else {
+          if (lang === "hi") {
+            chatbotResponseText = `📸 मैंने कंप्यूटर विज़न से आपकी तस्वीर का विश्लेषण किया है: **${assessment.title}**। विस्तृत मूल्यांकन नीचे देखें:`;
+          } else if (lang === "mr") {
+            chatbotResponseText = `📸 मी कॉम्प्युटर व्हिजनद्वारे आपल्या फोटोची तपासणी केली आहे: **${assessment.title}**। तपशीलवार मूल्यांकन खाली पहा:`;
+          } else {
+            chatbotResponseText = `📸 I analyzed your photo with our Computer Vision engine: **${assessment.title}**. Here is your evaluation grounded in Lessons 2 & 3:`;
+          }
+        }
+
         const assistantMsg: ChatMessage = {
           id: `assistant-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
           role: "assistant",
-          text: "", // Bubble renders the full assessment card
+          text: chatbotResponseText,
           createdAt: new Date().toISOString(),
           videoContextId: videoId,
           visionAssessment: assessment,
           sources: assessment.sources,
-          relevantQuestions:
-            assessment.category === "slip_knot"
-              ? [
-                  "How do I insert needle 2 after making the slip knot?",
-                  "How to maintain even tension row-by-row?",
-                  "What is the cast-on technique from Lesson 3?",
-                ]
-              : assessment.category === "yarn"
-              ? [
-                  "Which needle material works best with this yarn?",
-                  "How does yarn thickness determine needle size?",
-                ]
-              : [
-                  "Are metal or wooden needles better for beginners?",
-                  "How to avoid dropping stitches?",
-                ],
         };
         setMessages((prev) => [...prev, assistantMsg]);
       } catch (err) {
@@ -136,8 +144,7 @@ export default function AIAssistantPanel({
           "assistant",
           response.answer,
           videoId,
-          response.sources,
-          response.relevantQuestions
+          response.sources
         ),
       ]);
     } finally {
@@ -175,25 +182,6 @@ export default function AIAssistantPanel({
             <p className="text-sm text-ink/80 leading-relaxed">
               <strong>Ask questions by typing, speaking (🎙️ English / मराठी), or uploading a photo!</strong> Use the microphone to ask voice questions in English or Marathi, or use camera upload to check your <strong>slip knot</strong>, <strong>yarn</strong>, or <strong>needles</strong>.
             </p>
-
-            <div className="pt-1">
-              <p className="text-xs font-semibold text-workshop-700 uppercase tracking-wider mb-2">
-                Suggested questions for {videoTitle ? "this lesson" : "beginners"}:
-              </p>
-              <div className="flex flex-col gap-1.5">
-                {starterQuestions.map((q, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => handleSendMessage(q)}
-                    disabled={isSending}
-                    className="text-left rounded-lg bg-white border border-workshop-200 hover:border-workshop-400 hover:bg-workshop-100/50 px-3 py-2 text-xs font-medium text-ink/80 transition-all shadow-2xs hover:shadow-xs disabled:opacity-50"
-                  >
-                    {q}
-                  </button>
-                ))}
-              </div>
-            </div>
           </div>
         )}
 
@@ -201,7 +189,6 @@ export default function AIAssistantPanel({
           <ChatBubble
             key={message.id}
             message={message}
-            onSelectQuestion={(q) => handleSendMessage(q)}
           />
         ))}
 

@@ -86,20 +86,28 @@ export default function AIAssistantPanel({
           visionAssessment: assessment,
           sources: assessment.sources,
           relevantQuestions:
-            assessment.category === "slip_knot"
+            assessment.category === "heart"
               ? [
-                  "How do I insert needle 2 after making the slip knot?",
-                  "How to maintain even tension row-by-row?",
-                  "What is the cast-on technique from Lesson 3?",
+                  "How do I make the 3 treble crochets for the heart lobes?",
+                  "How do I close the magic ring tightly?",
+                  "What hook size is best for the heart shape?",
                 ]
-              : assessment.category === "yarn"
+              : assessment.category === "pentagon"
               ? [
-                  "Which needle material works best with this yarn?",
-                  "How does yarn thickness determine needle size?",
+                  "How do I expand corners in Round 2 of the pentagon?",
+                  "Why must I not skip the final double crochet?",
+                  "How to weave in the tails with a tapestry needle?",
+                ]
+              : assessment.category === "hexagon"
+              ? [
+                  "How do I make the 6 corners in Round 1 of the hexagon?",
+                  "How do I work the increased DC after the 6th corner?",
+                  "What hook size does Suchita recommend for the hexagon?",
                 ]
               : [
-                  "Are metal or wooden needles better for beginners?",
-                  "How to avoid dropping stitches?",
+                  "How do I do a double crochet using the 7 steps?",
+                  "What is the difference between single and half double crochet?",
+                  "How do I make a clean foundation chain?",
                 ],
         };
         setMessages((prev) => [...prev, assistantMsg]);
@@ -164,8 +172,8 @@ export default function AIAssistantPanel({
         </div>
         <p className="text-sm text-ink/60 mt-0.5">
           {videoTitle
-            ? `Grounded in "${videoTitle}" & course texts`
-            : "Grounded in knitting lessons"}
+            ? `Grounded in "${videoTitle}" & video transcripts`
+            : "Grounded in Crochet Lessons (Parts 1 - 4)"}
         </p>
       </div>
 
@@ -173,7 +181,7 @@ export default function AIAssistantPanel({
         {messages.length === 0 && (
           <div className="space-y-3 rounded-card bg-workshop-50/70 p-4 border border-workshop-200">
             <p className="text-sm text-ink/80 leading-relaxed">
-              <strong>Ask questions by typing, speaking (🎙️ English / मराठी), or uploading a photo!</strong> Use the microphone to ask voice questions in English or Marathi, or use camera upload to check your <strong>slip knot</strong>, <strong>yarn</strong>, or <strong>needles</strong>.
+              <strong>Ask questions by typing, speaking (🎙️ English / मराठी), or uploading a photo!</strong> Use the microphone to ask voice questions in English or Marathi, or use camera upload to inspect your <strong>crochet stitches</strong>, <strong>heart</strong>, <strong>pentagon</strong>, or <strong>hexagon</strong>.
             </p>
 
             <div className="pt-1">

@@ -35,11 +35,6 @@ export default function CoursePage() {
     return "upcoming" as const;
   };
 
-  // Demo video is video 0; standard lessons are 1-6
-  const demoVideoItem = MOCK_COURSE.videos[0];
-  const module1Videos = MOCK_COURSE.videos.slice(1, 4); // Lessons 1-3
-  const module2Videos = MOCK_COURSE.videos.slice(4, 7); // Lessons 4-6
-
   return (
     <div className="space-y-8">
       {/* Course Hero Banner */}
@@ -47,10 +42,10 @@ export default function CoursePage() {
         <div className="relative z-10 max-w-2xl">
           <div className="flex flex-wrap items-center gap-2 mb-3">
             <span className="rounded-full bg-white/20 backdrop-blur-xs px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
-              Official Craft Curriculum
+              Official Crochet Curriculum
             </span>
             <span className="rounded-full bg-turmeric-400 text-workshop-900 px-3 py-1 text-xs font-extrabold">
-              Demo Lecture + 6 Lessons
+              4 Step-by-Step Video Lessons
             </span>
           </div>
 
@@ -59,18 +54,18 @@ export default function CoursePage() {
           </h1>
 
           <p className="text-base md:text-lg text-white/90 leading-relaxed mb-6">
-            Master the timeless art of hand knitting: understand wool vs cotton yarn, select proper metal and wooden needles, craft balanced slip knots, and build beautiful handmade creations.
+            Master the art of crochet with Suchita: learn foundation stitches (Chain, Single, Half Double, Double Crochet) and create stunning geometric shapes including Hearts, Pentagons, and Hexagons.
           </p>
 
           <div className="flex flex-wrap items-center gap-4 text-xs md:text-sm text-white/80">
             <span className="flex items-center gap-1.5 font-medium">
-              ~1 hr total
+              ~30 min total
             </span>
             <span className="flex items-center gap-1.5 font-medium">
-              Hands-on projects
+              Hands-on shape projects
             </span>
             <span className="flex items-center gap-1.5 font-medium">
-              AI tutor & photo feedback
+              AI Tutor in Marathi & English
             </span>
           </div>
         </div>
@@ -97,7 +92,7 @@ export default function CoursePage() {
               </h2>
 
               <p className="text-sm text-ink/70">
-                {currentLearningVideo.order === 0 ? "Featured Demo Video" : `Lesson ${currentLearningVideo.order}`} • {currentLearningVideo.durationMinutes} min
+                {`Part ${currentLearningVideo.order}`} • {currentLearningVideo.durationMinutes} min
               </p>
 
               <div className="pt-2 max-w-md">
@@ -121,9 +116,9 @@ export default function CoursePage() {
         <Card className="border-workshop-200 bg-white">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h2 className="text-xl font-bold text-ink">Ready to start knitting?</h2>
+              <h2 className="text-xl font-bold text-ink">Ready to start crocheting?</h2>
               <p className="mt-1 text-sm text-ink/70">
-                Enroll for free to unlock the demo video and all 6 video lessons, track your stitch count, and get instant AI photo feedback on your slip knot and yarns.
+                Enroll for free to unlock all 4 video lessons, track your progress, and get instant AI guidance on stitches and shapes.
               </p>
             </div>
             <Button onClick={handleRegister} disabled={isEnrolling} className="shrink-0">
@@ -138,55 +133,15 @@ export default function CoursePage() {
         <div>
           <h2 className="text-2xl font-extrabold text-ink">Course Curriculum</h2>
           <p className="text-sm text-ink/60 mt-1">
-            Follow the sequential roadmap from basic tool identification to exhibition-ready knitted goods.
+            Follow Suchita's 4-part sequential masterclass from foundation stitches to advanced geometric shapes.
           </p>
         </div>
 
-        {/* Featured Demo Video Section */}
-        {demoVideoItem && (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between border-b border-line pb-2">
-              <div className="flex items-center gap-2">
-                <span className="flex h-6 w-6 items-center justify-center rounded-md bg-turmeric-500 text-workshop-900 font-extrabold text-xs">
-                  0
-                </span>
-                <h3 className="text-lg font-bold text-ink">Featured Demo Lecture (Before Lesson 1)</h3>
-              </div>
-            </div>
-            <VideoListItem video={demoVideoItem} status={getStatus(0)} />
-          </div>
-        )}
-
-        {/* Module 1 */}
-        <div className="space-y-3 pt-2">
-          <div className="flex items-center gap-2 border-b border-line pb-2">
-            <span className="flex h-6 w-6 items-center justify-center rounded-md bg-workshop-600 text-white font-extrabold text-xs">
-              1
-            </span>
-            <h3 className="text-lg font-bold text-ink">Module 1: Foundations & Essential Materials</h3>
-            <span className="text-xs text-ink/50">(Lessons 1 - 3)</span>
-          </div>
-          <div className="space-y-2">
-            {module1Videos.map((video, idx) => (
-              <VideoListItem key={video.id} video={video} status={getStatus(1 + idx)} />
-            ))}
-          </div>
-        </div>
-
-        {/* Module 2 */}
-        <div className="space-y-3 pt-2">
-          <div className="flex items-center gap-2 border-b border-line pb-2">
-            <span className="flex h-6 w-6 items-center justify-center rounded-md bg-workshop-600 text-white font-extrabold text-xs">
-              2
-            </span>
-            <h3 className="text-lg font-bold text-ink">Module 2: Core Stitches & Foundation</h3>
-            <span className="text-xs text-ink/50">(Lessons 4 - 6)</span>
-          </div>
-          <div className="space-y-2">
-            {module2Videos.map((video, idx) => (
-              <VideoListItem key={video.id} video={video} status={getStatus(4 + idx)} />
-            ))}
-          </div>
+        {/* All Video Lessons */}
+        <div className="space-y-2.5">
+          {MOCK_COURSE.videos.map((video, idx) => (
+            <VideoListItem key={video.id} video={video} status={getStatus(idx)} />
+          ))}
         </div>
       </div>
     </div>

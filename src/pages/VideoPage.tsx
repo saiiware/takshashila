@@ -1,19 +1,10 @@
 import { useEffect, useRef } from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
-import { MOCK_COURSE } from "@/data/mockData";
+import { MOCK_COURSE, VIDEO_TIMESTAMPS } from "@/data/mockData";
 import { useProgress } from "@/context/ProgressContext";
 import Button from "@/components/common/Button";
 import Card from "@/components/common/Card";
 import AIAssistantPanel from "@/components/ai/AIAssistantPanel";
-
-const DEMO_TIMESTAMPS = [
-  { time: "00:00", seconds: 0, label: "Title Card & Introduction" },
-  { time: "00:04", seconds: 4, label: "Measuring & Cutting Thread (1-1.5 inches extra)" },
-  { time: "00:16", seconds: 16, label: "Front vs. Back Identification (Braided ridges)" },
-  { time: "00:41", seconds: 41, label: "Weaving First Half with Crochet Needle" },
-  { time: "01:26", seconds: 86, label: "Running Stitch at Half-Inch Intervals" },
-  { time: "02:38", seconds: 158, label: "Summary & Bottom Edge Mirroring" },
-];
 
 export default function VideoPage() {
   const { videoId } = useParams<{ videoId: string }>();
@@ -22,7 +13,7 @@ export default function VideoPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const videoIndex = MOCK_COURSE.videos.findIndex((v) => v.id === videoId);
-  const video = MOCK_COURSE.videos[videoIndex];
+  const video = MOCK_COURSE.videos[videoIndex >= 0 ? videoIndex : 0];
 
   useEffect(() => {
     if (video) setLastAccessed(video.id);
@@ -42,7 +33,7 @@ export default function VideoPage() {
   const isCompleted = Boolean(enrollment?.videoProgress[video.id]?.completed);
   const previousVideo = MOCK_COURSE.videos[videoIndex - 1];
   const nextVideo = MOCK_COURSE.videos[videoIndex + 1];
-  const isDemo = video.id.includes("video-0");
+  const activeTimestamps = VIDEO_TIMESTAMPS[video.id] || [];
 
   const handleMarkCompleted = async () => {
     await markCompleted(video.id);
@@ -82,7 +73,7 @@ export default function VideoPage() {
               </Link>
               <span className="text-ink/30">•</span>
               <span className="rounded-full bg-workshop-100 px-2.5 py-0.5 text-xs font-bold text-workshop-800">
-                {video.order === 0 ? "Featured Demo Lecture" : `Lesson ${video.order} of ${MOCK_COURSE.totalVideos - 1}`}
+                {`Part ${video.order} of ${MOCK_COURSE.totalVideos}`}
               </span>
               <span className="rounded-full bg-paper px-2.5 py-0.5 text-xs font-medium text-ink/60 border border-line flex items-center gap-1">
                 <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -141,9 +132,9 @@ export default function VideoPage() {
       </Card>
 
       {/* 2. Side-by-Side Main Area: Large Video Player (Left) + Large AI Chatbot Card (Right) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 xl:gap-8 items-start">
         {/* Left Column: Enlarged Video Player & Timestamps */}
-        <div className="lg:col-span-7 xl:col-span-7 space-y-4">
+        <div className="lg:col-span-6 xl:col-span-6 space-y-4">
           {video.videoUrl ? (
             <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-black shadow-md">
               <video
@@ -171,14 +162,14 @@ export default function VideoPage() {
                   </svg>
                 </div>
                 <p className="mt-3 text-lg font-medium">
-                  {video.order === 0 ? "Demo Lesson" : `Lesson ${video.order}`} of {MOCK_COURSE.totalVideos - 1}
+                  {`Part ${video.order}`} of {MOCK_COURSE.totalVideos}
                 </p>
               </div>
             </div>
           )}
 
           {/* Interactive Timestamps for Quick Seeking */}
-          {isDemo && (
+          {activeTimestamps.length > 0 && (
             <div className="rounded-card border border-workshop-200 bg-workshop-50/70 p-4 space-y-2.5">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase tracking-wider text-workshop-800 flex items-center gap-1.5">
@@ -187,7 +178,7 @@ export default function VideoPage() {
                 <span className="text-[11px] text-ink/60">Click any timestamp to seek</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {DEMO_TIMESTAMPS.map((ts, idx) => (
+                {activeTimestamps.map((ts, idx) => (
                   <button
                     key={idx}
                     type="button"
@@ -208,9 +199,9 @@ export default function VideoPage() {
         </div>
 
         {/* Right Column: Enlarged AI Chatbot Card Side-by-Side with Video */}
-        <div className="lg:col-span-5 xl:col-span-5 lg:sticky lg:top-20">
-          <Card className="flex flex-col h-[580px] lg:h-[calc(100vh-10rem)] min-h-[520px] max-h-[760px] shadow-sm border-workshop-200 p-0 overflow-hidden">
-            <div className="flex flex-col h-full p-4 sm:p-5">
+        <div className="lg:col-span-6 xl:col-span-6 lg:sticky lg:top-20">
+          <Card className="flex flex-col h-[640px] lg:h-[calc(100vh-8rem)] min-h-[600px] max-h-[920px] shadow-sm border-2 border-workshop-200/90 rounded-2xl p-0 overflow-hidden bg-white">
+            <div className="flex flex-col h-full p-4 sm:p-6">
               <AIAssistantPanel videoId={video.id} videoTitle={video.title} />
             </div>
           </Card>

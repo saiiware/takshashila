@@ -11,6 +11,29 @@ export interface ChatImageAttachment {
   fileName: string;
 }
 
+const MARATHI_VOWELS = ["अ", "आ", "इ", "ई", "उ", "ऊ", "ए", "ऐ", "ओ", "औ", "अं", "ऋ"];
+const MARATHI_MATRAS = ["ा", "ि", "ी", "ु", "ू", "े", "ै", "ो", "ौ", "ं", "्", "ॅ", "ॉ", "ः"];
+const MARATHI_CONSONANTS = [
+  "क", "ख", "ग", "घ", "ङ",
+  "च", "छ", "ज", "झ", "ञ",
+  "ट", "ठ", "ड", "ढ", "ण",
+  "त", "थ", "द", "ध", "न",
+  "प", "फ", "ब", "भ", "म",
+  "य", "र", "ल", "व",
+  "श", "ष", "स", "ह", "ळ", "क्ष", "ज्ञ"
+];
+const MARATHI_NUMBERS = ["१", "२", "३", "४", "५", "६", "७", "८", "९", "०"];
+const CRAFT_QUICK_WORDS_MR = [
+  "क्रोशे", "टाका", "साखळी", "यान", "सुई", "मॅजिक रिंग", "हार्ट", "पंचकोन", "षटकोन", "डबल क्रोशे", "सिंगल क्रोशे", "कसा बनवायचा?", "रंग"
+];
+const CRAFT_QUICK_WORDS_EN = [
+  "Crochet", "Stitch", "Chain", "Yarn", "Hook", "Magic ring", "Heart", "Pentagon", "Hexagon", "Single crochet", "Double crochet", "Color"
+];
+const ENGLISH_ROW_1 = ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"];
+const ENGLISH_ROW_2 = ["a", "s", "d", "f", "g", "h", "j", "k", "l"];
+const ENGLISH_ROW_3 = ["z", "x", "c", "v", "b", "n", "m"];
+const ENGLISH_NUMBERS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"];
+
 interface ChatInputProps {
   onSend: (text: string, image?: ChatImageAttachment) => void;
   onMicPress?: () => void;
@@ -33,16 +56,68 @@ export default function ChatInput({
   const [interimText, setInterimText] = useState("");
   const [speechError, setSpeechError] = useState<string | null>(null);
 
+  // Virtual on-screen keyboard state
+  const [showKeyboard, setShowKeyboard] = useState(false);
+  const [keyboardLang, setKeyboardLang] = useState<"mr" | "en">(preferredLanguage === "mr" ? "mr" : "en");
+  const [keyboardTab, setKeyboardTab] = useState<"consonants" | "vowels" | "words">("consonants");
+  const [isShift, setIsShift] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textInputRef = useRef<HTMLInputElement>(null);
   const stopSpeechRef = useRef<(() => Promise<void>) | null>(null);
 
-  // Sync speech language if preferredLanguage prop changes
+  // Sync keyboard and speech language if preferredLanguage prop changes
   useEffect(() => {
     if (preferredLanguage) {
       setSpeechLang(preferredLanguage);
+      setKeyboardLang(preferredLanguage);
     }
   }, [preferredLanguage]);
+
+  const handleInsertChar = (char: string) => {
+    const input = textInputRef.current;
+    if (!input) {
+      setText((prev) => prev + char);
+      return;
+    }
+    const start = input.selectionStart ?? text.length;
+    const end = input.selectionEnd ?? text.length;
+    const newText = text.substring(0, start) + char + text.substring(end);
+    setText(newText);
+    setTimeout(() => {
+      input.focus();
+      input.setSelectionRange(start + char.length, start + char.length);
+    }, 0);
+  };
+
+  const handleInsertWord = (word: string) => {
+    handleInsertChar(word.endsWith(" ") ? word : word + " ");
+  };
+
+  const handleBackspace = () => {
+    const input = textInputRef.current;
+    if (!input) {
+      setText((prev) => prev.slice(0, -1));
+      return;
+    }
+    const start = input.selectionStart ?? text.length;
+    const end = input.selectionEnd ?? text.length;
+    if (start === end && start > 0) {
+      const newText = text.substring(0, start - 1) + text.substring(end);
+      setText(newText);
+      setTimeout(() => {
+        input.focus();
+        input.setSelectionRange(start - 1, start - 1);
+      }, 0);
+    } else if (start !== end) {
+      const newText = text.substring(0, start) + text.substring(end);
+      setText(newText);
+      setTimeout(() => {
+        input.focus();
+        input.setSelectionRange(start, start);
+      }, 0);
+    }
+  };
 
   // Clean up any ongoing microphone sessions on unmount
   useEffect(() => {
@@ -294,6 +369,353 @@ export default function ChatInput({
         </div>
       )}
 
+      {/* Virtual On-Screen Marathi / English Keyboard */}
+      {showKeyboard && (
+        <div className="rounded-2xl border border-workshop-300 bg-white/98 p-2.5 sm:p-3 shadow-lg backdrop-blur-md animate-fade-in flex flex-col gap-2">
+          {/* Top Bar: Title, Language Switcher, Category Tabs, Close */}
+          <div className="flex flex-wrap items-center justify-between gap-1.5 border-b border-workshop-200/80 pb-2">
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm">⌨️</span>
+              <span className="text-xs font-bold text-ink">
+                {keyboardLang === "mr" ? "मराठी कीबोर्ड" : "English Keyboard"}
+              </span>
+
+              {/* Language Switch Toggle (मराठी / EN) inside virtual keyboard */}
+              <div className="ml-1 inline-flex rounded-lg border border-workshop-200 bg-workshop-50 p-0.5 text-[11px] font-semibold">
+                <button
+                  type="button"
+                  onClick={() => setKeyboardLang("mr")}
+                  className={`rounded-md px-2 py-0.5 transition-all cursor-pointer ${
+                    keyboardLang === "mr"
+                      ? "bg-workshop-600 text-white font-bold shadow-2xs"
+                      : "text-ink/60 hover:text-ink hover:bg-white"
+                  }`}
+                >
+                  मराठी
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setKeyboardLang("en")}
+                  className={`rounded-md px-2 py-0.5 transition-all cursor-pointer ${
+                    keyboardLang === "en"
+                      ? "bg-workshop-600 text-white font-bold shadow-2xs"
+                      : "text-ink/60 hover:text-ink hover:bg-white"
+                  }`}
+                >
+                  English
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1 sm:gap-2">
+              {/* Category Sub-tabs for Marathi */}
+              {keyboardLang === "mr" && (
+                <div className="flex rounded-lg border border-workshop-200 bg-workshop-50 p-0.5 text-[11px] font-medium">
+                  <button
+                    type="button"
+                    onClick={() => setKeyboardTab("consonants")}
+                    className={`rounded-md px-2 py-0.5 transition-all cursor-pointer ${
+                      keyboardTab === "consonants"
+                        ? "bg-white text-ink font-bold shadow-2xs"
+                        : "text-ink/60 hover:text-ink"
+                    }`}
+                  >
+                    व्यंजन
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setKeyboardTab("vowels")}
+                    className={`rounded-md px-2 py-0.5 transition-all cursor-pointer ${
+                      keyboardTab === "vowels"
+                        ? "bg-white text-ink font-bold shadow-2xs"
+                        : "text-ink/60 hover:text-ink"
+                    }`}
+                  >
+                    स्वर / मात्रा
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setKeyboardTab("words")}
+                    className={`rounded-md px-2 py-0.5 transition-all cursor-pointer ${
+                      keyboardTab === "words"
+                        ? "bg-white text-ink font-bold shadow-2xs"
+                        : "text-ink/60 hover:text-ink"
+                    }`}
+                  >
+                    शॉर्टकट
+                  </button>
+                </div>
+              )}
+
+              {/* Close Button */}
+              <button
+                type="button"
+                onClick={() => setShowKeyboard(false)}
+                title="कीबोर्ड बंद करा / Close keyboard"
+                className="flex h-6 w-6 items-center justify-center rounded-md text-ink/50 hover:bg-workshop-100 hover:text-ink transition-colors cursor-pointer text-xs"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+
+          {/* Quick Craft Words Bar */}
+          <div className="flex items-center gap-1 overflow-x-auto pb-1 text-xs no-scrollbar">
+            <span className="text-[10px] font-bold text-workshop-600 uppercase shrink-0">
+              {keyboardLang === "mr" ? "शब्द:" : "Words:"}
+            </span>
+            {(keyboardLang === "mr" ? CRAFT_QUICK_WORDS_MR : CRAFT_QUICK_WORDS_EN).map((word) => (
+              <button
+                key={word}
+                type="button"
+                onClick={() => handleInsertWord(word)}
+                className="shrink-0 rounded-lg border border-workshop-200 bg-workshop-50/80 hover:bg-workshop-100 hover:border-workshop-300 px-2 py-1 text-[11px] font-medium text-ink transition-all active:scale-95 cursor-pointer shadow-2xs"
+              >
+                {word}
+              </button>
+            ))}
+          </div>
+
+          {/* MARATHI KEYBOARD CONTENT */}
+          {keyboardLang === "mr" && (
+            <div className="flex flex-col gap-2">
+              {/* Frequently used Matras row: Show in Consonants tab for fast composition (क + ा = का) */}
+              {keyboardTab === "consonants" && (
+                <div className="flex flex-wrap items-center gap-1 rounded-xl bg-workshop-100/70 p-1.5 border border-workshop-200/80">
+                  <span className="text-[10px] font-bold text-workshop-700 px-1 shrink-0">मात्रा:</span>
+                  {MARATHI_MATRAS.map((matra, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => handleInsertChar(matra)}
+                      className="flex h-7 min-w-7 px-1 items-center justify-center rounded-md border border-workshop-300 bg-white text-xs font-bold text-workshop-900 shadow-2xs hover:bg-workshop-200 active:scale-95 cursor-pointer"
+                    >
+                      {matra === "्" ? "् (हलंत)" : `क${matra}`}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Tab 1: Consonants (व्यंजन) */}
+              {keyboardTab === "consonants" && (
+                <div className="grid grid-cols-7 sm:grid-cols-9 md:grid-cols-11 gap-1">
+                  {MARATHI_CONSONANTS.map((char) => (
+                    <button
+                      key={char}
+                      type="button"
+                      onClick={() => handleInsertChar(char)}
+                      className="flex h-8 items-center justify-center rounded-lg border border-workshop-200 bg-white text-sm font-semibold text-ink shadow-2xs hover:bg-workshop-100 hover:border-workshop-300 active:scale-95 cursor-pointer"
+                    >
+                      {char}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Tab 2: Vowels, Matras, and Numbers */}
+              {keyboardTab === "vowels" && (
+                <div className="space-y-2">
+                  <div>
+                    <p className="text-[10px] font-bold text-workshop-600 mb-1">स्वर (Vowels):</p>
+                    <div className="grid grid-cols-6 sm:grid-cols-8 gap-1">
+                      {MARATHI_VOWELS.map((char) => (
+                        <button
+                          key={char}
+                          type="button"
+                          onClick={() => handleInsertChar(char)}
+                          className="flex h-8 items-center justify-center rounded-lg border border-workshop-200 bg-white text-sm font-semibold text-ink shadow-2xs hover:bg-workshop-100 active:scale-95 cursor-pointer"
+                        >
+                          {char}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-[10px] font-bold text-workshop-600 mb-1">मात्रा व चिन्हे (Signs):</p>
+                    <div className="grid grid-cols-7 sm:grid-cols-9 gap-1">
+                      {MARATHI_MATRAS.map((char, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => handleInsertChar(char)}
+                          className="flex h-8 items-center justify-center rounded-lg border border-workshop-200 bg-workshop-50 text-sm font-bold text-workshop-900 shadow-2xs hover:bg-workshop-100 active:scale-95 cursor-pointer"
+                        >
+                          {char}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-[10px] font-bold text-workshop-600 mb-1">अंक (Marathi Numbers):</p>
+                    <div className="grid grid-cols-10 gap-1">
+                      {MARATHI_NUMBERS.map((num) => (
+                        <button
+                          key={num}
+                          type="button"
+                          onClick={() => handleInsertChar(num)}
+                          className="flex h-8 items-center justify-center rounded-lg border border-workshop-200 bg-white text-sm font-semibold text-ink shadow-2xs hover:bg-workshop-100 active:scale-95 cursor-pointer"
+                        >
+                          {num}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Tab 3: Shortcut Craft Terms */}
+              {keyboardTab === "words" && (
+                <div className="flex flex-wrap gap-1.5 p-1">
+                  {CRAFT_QUICK_WORDS_MR.map((w) => (
+                    <button
+                      key={w}
+                      type="button"
+                      onClick={() => handleInsertWord(w)}
+                      className="rounded-lg border border-workshop-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-workshop-900 shadow-2xs hover:bg-workshop-100 active:scale-95 cursor-pointer"
+                    >
+                      {w}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ENGLISH KEYBOARD CONTENT */}
+          {keyboardLang === "en" && (
+            <div className="flex flex-col gap-1.5">
+              {/* English Numbers */}
+              <div className="grid grid-cols-10 gap-1">
+                {ENGLISH_NUMBERS.map((num) => (
+                  <button
+                    key={num}
+                    type="button"
+                    onClick={() => handleInsertChar(num)}
+                    className="flex h-7 items-center justify-center rounded-md border border-workshop-200 bg-white text-xs font-semibold text-ink shadow-2xs hover:bg-workshop-100 active:scale-95 cursor-pointer"
+                  >
+                    {num}
+                  </button>
+                ))}
+              </div>
+
+              {/* Row 1 */}
+              <div className="grid grid-cols-10 gap-1">
+                {ENGLISH_ROW_1.map((letter) => {
+                  const display = isShift ? letter.toUpperCase() : letter;
+                  return (
+                    <button
+                      key={letter}
+                      type="button"
+                      onClick={() => handleInsertChar(display)}
+                      className="flex h-8 items-center justify-center rounded-lg border border-workshop-200 bg-white text-sm font-semibold text-ink shadow-2xs hover:bg-workshop-100 active:scale-95 cursor-pointer"
+                    >
+                      {display}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Row 2 */}
+              <div className="flex justify-center gap-1 px-3">
+                {ENGLISH_ROW_2.map((letter) => {
+                  const display = isShift ? letter.toUpperCase() : letter;
+                  return (
+                    <button
+                      key={letter}
+                      type="button"
+                      onClick={() => handleInsertChar(display)}
+                      className="flex h-8 flex-1 items-center justify-center rounded-lg border border-workshop-200 bg-white text-sm font-semibold text-ink shadow-2xs hover:bg-workshop-100 active:scale-95 cursor-pointer"
+                    >
+                      {display}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Row 3 with Shift */}
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setIsShift((prev) => !prev)}
+                  className={`flex h-8 w-14 shrink-0 items-center justify-center rounded-lg border text-xs font-bold transition-colors cursor-pointer ${
+                    isShift
+                      ? "border-workshop-600 bg-workshop-600 text-white shadow-2xs"
+                      : "border-workshop-200 bg-workshop-100 text-ink/70 hover:bg-workshop-200"
+                  }`}
+                >
+                  ⇧ Shift
+                </button>
+
+                <div className="flex flex-1 gap-1">
+                  {ENGLISH_ROW_3.map((letter) => {
+                    const display = isShift ? letter.toUpperCase() : letter;
+                    return (
+                      <button
+                        key={letter}
+                        type="button"
+                        onClick={() => handleInsertChar(display)}
+                        className="flex h-8 flex-1 items-center justify-center rounded-lg border border-workshop-200 bg-white text-sm font-semibold text-ink shadow-2xs hover:bg-workshop-100 active:scale-95 cursor-pointer"
+                      >
+                        {display}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Common Bottom Controls Bar: Space, Backspace, Clear, Punctuation */}
+          <div className="flex items-center gap-1 border-t border-workshop-100 pt-1.5">
+            <button
+              type="button"
+              onClick={() => handleInsertChar("?")}
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-workshop-200 bg-white text-sm font-bold text-ink shadow-2xs hover:bg-workshop-100 active:scale-95 cursor-pointer"
+            >
+              ?
+            </button>
+            <button
+              type="button"
+              onClick={() => handleInsertChar(",")}
+              className="flex h-8 w-7 items-center justify-center rounded-lg border border-workshop-200 bg-white text-sm font-bold text-ink shadow-2xs hover:bg-workshop-100 active:scale-95 cursor-pointer"
+            >
+              ,
+            </button>
+            <button
+              type="button"
+              onClick={() => handleInsertChar(".")}
+              className="flex h-8 w-7 items-center justify-center rounded-lg border border-workshop-200 bg-white text-sm font-bold text-ink shadow-2xs hover:bg-workshop-100 active:scale-95 cursor-pointer"
+            >
+              .
+            </button>
+            <button
+              type="button"
+              onClick={() => handleInsertChar(" ")}
+              className="flex h-8 flex-1 items-center justify-center rounded-lg border border-workshop-200 bg-white text-xs font-semibold text-ink shadow-2xs hover:bg-workshop-100 active:scale-95 cursor-pointer"
+            >
+              {keyboardLang === "mr" ? "अंतर (Space)" : "Space"}
+            </button>
+            <button
+              type="button"
+              onClick={handleBackspace}
+              className="flex h-8 items-center justify-center gap-1 rounded-lg border border-workshop-200 bg-workshop-100 hover:bg-workshop-200 px-2 text-xs font-semibold text-ink transition-colors active:scale-95 cursor-pointer"
+            >
+              <span>⌫</span>
+              <span className="hidden sm:inline">{keyboardLang === "mr" ? "मागे" : "Del"}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setText("")}
+              className="flex h-8 items-center justify-center rounded-lg border border-workshop-200 bg-workshop-50 hover:bg-workshop-200 px-2 text-xs font-semibold text-red-600 transition-colors active:scale-95 cursor-pointer"
+            >
+              {keyboardLang === "mr" ? "हटवा" : "Clear"}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Main Input Controls Row */}
       <div className="flex items-center gap-1.5 sm:gap-2">
         <input
@@ -378,6 +800,27 @@ export default function ChatInput({
             मराठी
           </button>
         </div>
+
+        {/* Virtual On-Screen Keyboard Toggle Button (⌨️) */}
+        <button
+          type="button"
+          onClick={() => {
+            setShowKeyboard((prev) => !prev);
+          }}
+          title={
+            showKeyboard
+              ? "Close on-screen keyboard (कीबोर्ड बंद करा)"
+              : "Open on-screen keyboard for Marathi or English (ऑन-स्क्रीन कीबोर्ड उघडा)"
+          }
+          aria-label={showKeyboard ? "Close on-screen keyboard" : "Open on-screen keyboard"}
+          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border transition-all active:scale-95 cursor-pointer ${
+            showKeyboard
+              ? "border-workshop-600 bg-workshop-100 text-workshop-900 shadow-sm ring-2 ring-workshop-400"
+              : "border-line bg-white text-workshop-600 shadow-2xs hover:border-workshop-400 hover:bg-workshop-50"
+          }`}
+        >
+          <span className="text-lg leading-none" role="img" aria-hidden="true">⌨️</span>
+        </button>
 
         {/* Text Input Field */}
         <input

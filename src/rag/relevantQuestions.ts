@@ -8,83 +8,130 @@ interface QuestionRule {
 }
 
 const QUESTION_RULES: QuestionRule[] = [
+  // Part 1: Stitches & Beginner Basics
   {
-    triggerTerms: ["panel", "crochet", "hook", "center", "running", "braid", "front", "back", "extra", "esahli"],
+    triggerTerms: ["chain", "ch", "starter", "loop", "चेन"],
     suggestedQuestions: [
-      "How much extra thread should I leave when measuring the center panel?",
-      "Which side of the knitted piece is used as the front side?",
-      "What interval should I keep between running stitches?",
-      "What tool is used to stitch the center panel in the demo lecture?",
+      "How do I make a chain stitch step by step?",
+      "Why is chain stitch the foundation for all crochet?",
+      "How many chains should I practice initially?",
+      "How do I hold the yarn in my left hand while chaining?",
     ],
   },
   {
-    triggerTerms: ["slip", "knot", "first", "start", "begin", "loop"],
+    triggerTerms: ["single", "sc", "सिंगल"],
     suggestedQuestions: [
-      "How do I insert the second needle into the slip knot loop?",
-      "How do I wrap the yarn and pull it through to make new loops?",
-      "Why is it important to avoid pulling the yarn too tightly?",
-      "How do loops connect row by row to form a piece of fabric?",
+      "How do I make a single crochet stitch?",
+      "How many loops should be on the hook for single crochet?",
+      "What is the difference between a chain stitch and single crochet?",
+      "How do I insert the hook into the chain for single crochet?",
     ],
   },
   {
-    triggerTerms: ["yarn", "wool", "cotton", "thread", "thickness", "texture"],
+    triggerTerms: ["half", "hdc", "हाफ"],
     suggestedQuestions: [
-      "When should I choose wool yarn instead of cotton yarn?",
-      "How does yarn thickness determine what needle size to use?",
-      "What yarn is most suitable for warm weather garments?",
-      "How does yarn texture affect the comfort and durability of the product?",
+      "How do I make a half double crochet (HDC) in 5 steps?",
+      "Why do I pull through all 3 loops at once in half double crochet?",
+      "What is the difference between single crochet and half double crochet?",
+      "How do I yarn over before inserting for HDC?",
     ],
   },
   {
-    triggerTerms: ["needle", "needles", "metal", "wood", "plastic", "size"],
+    triggerTerms: ["double", "dc", "डबल"],
     suggestedQuestions: [
-      "What are the advantages of metal, wood, and plastic knitting needles?",
-      "How do I choose the correct needle size for my yarn?",
-      "Why does needle size affect the final product's appearance?",
-      "What is a yarn needle and how is it used?",
+      "What are the 7 steps to create a double crochet stitch?",
+      "How do I pull through 2 loops twice in double crochet?",
+      "Where is double crochet used in pentagons and hexagons?",
+      "How does double crochet differ from half double crochet?",
     ],
   },
   {
-    triggerTerms: ["tool", "tools", "scissor", "scissors", "tape", "measur", "marker", "stitch"],
+    triggerTerms: ["yarn", "hook", "ganga", "olivia", "acrylic", "मटेरि", "साहित्य"],
     suggestedQuestions: [
-      "What are stitch markers and measuring tapes used for in knitting?",
-      "Which essential tools make the knitting process easier and more accurate?",
-      "How do the right tools improve the quality of knitted items?",
-      "What items are needed in a beginner's knitting kit?",
+      "Why is Ganga Olivia acrylic yarn recommended for beginners?",
+      "What hook size is recommended for Part 1 (4.5mm) vs Parts 2-4 (4mm)?",
+      "Why should beginners avoid very thin crochet hooks?",
+      "What tools are needed besides yarn and a crochet hook?",
+    ],
+  },
+
+  // Part 2: Heart Shape
+  {
+    triggerTerms: ["heart", "cute", "हार्ट"],
+    suggestedQuestions: [
+      "What is the exact stitch sequence to crochet the cute heart shape?",
+      "How do I make treble crochets for the heart's upper lobes?",
+      "How do I form the sharp bottom corner of the heart?",
+      "How do I pull the magic ring tight to close the center hole completely?",
     ],
   },
   {
-    triggerTerms: ["tight", "tightli", "tension", "even", "stitch", "neat", "strong", "fabric"],
+    triggerTerms: ["magic", "ring", "circle", "मॅजिक"],
     suggestedQuestions: [
-      "Why should you avoid pulling the yarn too tightly while making loops?",
-      "How can practicing slowly help keep your stitches even?",
-      "How do connected loops form a neat and strong fabric?",
-      "What basic items like scarves or caps can I make once loops are even?",
+      "How do I make an adjustable magic ring step by step?",
+      "Why is a magic ring used instead of chains for circular shapes?",
+      "How do I hold the yarn to start a magic circle?",
+      "How do I tighten the center hole of a magic ring?",
     ],
   },
   {
-    triggerTerms: ["product", "products", "sweater", "scarf", "cap", "bag", "make", "create"],
+    triggerTerms: ["treble", "triple", "tr", "ट्रिपल"],
     suggestedQuestions: [
-      "What are the best beginner items to make (e.g. scarves, caps, bags)?",
-      "How do I choose yarn and needles for a sweater versus a scarf?",
-      "How can I present and share my knitted products attractively?",
-      "How does knitting develop patience, creativity, and practical skills?",
+      "How do I yarn over twice to make a treble crochet?",
+      "How many times do I pull through 2 loops in a treble crochet?",
+      "Why are treble crochets used for the curves of the heart?",
+      "What is the difference between double crochet and treble crochet?",
     ],
   },
+
+  // Part 3: Pentagon
   {
-    triggerTerms: ["present", "show", "share", "exhibit", "social", "media", "market", "family"],
+    triggerTerms: ["pentagon", "five", "sides", "corners", "पंचकोन"],
     suggestedQuestions: [
-      "How can I display knitted products at exhibitions or on social media?",
-      "Why is explaining how a product was made important for presentation?",
-      "How does keeping products neat improve their appeal to friends and customers?",
-      "What unique design touches make hand-knitted items attractive?",
+      "How do I start Round 1 of the pentagon with 5 corners?",
+      "What is the corner formula [1 DC, 2 ch, 1 DC] for Round 2?",
+      "Why must I not skip the final double crochet in Round 3 of the pentagon?",
+      "How do I achieve crisp, sharp geometric corners on a pentagon?",
+    ],
+  },
+
+  // Part 4: Hexagon
+  {
+    triggerTerms: ["hexagon", "six", "षटकोन"],
+    suggestedQuestions: [
+      "How do I create the 6 groups of [3 DC, 2 Ch] in Round 1 of the hexagon?",
+      "How do the corner spaces expand across Round 2 and Round 3?",
+      "Why is the increased double crochet after the 6th corner critical?",
+      "How do I weave in the yarn ends cleanly using a tapestry needle?",
+    ],
+  },
+
+  // Colors, Palette Styling & Combinations
+  {
+    triggerTerms: ["color", "colour", "shade", "palette", "grey", "gray", "pink", "yellow", "blue", "rang", "रंग"],
+    suggestedQuestions: [
+      "What colors pair beautifully with grey yarn in crochet?",
+      "What are the best high-contrast color combinations for motifs?",
+      "How do I choose colors for a crochet hexagon or pentagon?",
+      "How do I smoothly join a new yarn color during a round?",
+    ],
+  },
+
+  // Stitching, Sewing & Seaming
+  {
+    triggerTerms: ["sew", "sewing", "knit", "knitting", "stitch", "seam", "join", "शिलाई", "विणकाम"],
+    suggestedQuestions: [
+      "How do I sew crocheted shapes together using a tapestry needle?",
+      "What is the difference between knitting with needles and crocheting?",
+      "How do I do a running stitch or whip stitch to join panels?",
+      "How do I fix tension if my crochet or knitted edge is curling?",
     ],
   },
 ];
 
 /**
  * Extracts and suggests 3-4 highly relevant questions based on the user's
- * query, the retrieved RAG chunks, and the lesson context.
+ * query, the retrieved RAG chunks, and the active video lesson.
  */
 export function generateRelevantQuestions(
   userQuery: string,
@@ -99,61 +146,94 @@ export function generateRelevantQuestions(
     const hasMatch = rule.triggerTerms.some((term) => queryTokens.has(term));
     if (hasMatch) {
       for (const q of rule.suggestedQuestions) {
-        // Don't suggest the exact same question the user just asked
-        if (q.toLowerCase().trim() !== userQuery.toLowerCase().trim()) {
+        if (!suggestedSet.has(q) && q.toLowerCase() !== userQuery.toLowerCase().trim()) {
           suggestedSet.add(q);
         }
       }
     }
   }
 
-  // Also check top retrieved chunk topics
-  if (retrievedChunks.length > 0) {
-    const topChunk = retrievedChunks[0].chunk;
-    const parentDoc = KNITTING_DOCUMENTS.find((d) => d.id === topChunk.docId);
-    if (parentDoc) {
-      for (const q of parentDoc.starterQuestions) {
-        if (q.toLowerCase().trim() !== userQuery.toLowerCase().trim()) {
-          suggestedSet.add(q);
-        }
-      }
-    }
-  }
-
-  // If we still need questions, look at video context
-  if (suggestedSet.size < 3 && videoId) {
-    const match = videoId.match(/video-?(\d+)/i);
-    const order = match ? parseInt(match[1], 10) : 1;
-    const doc = KNITTING_DOCUMENTS.find((d) => d.videoOrder === order);
+  // Add questions from top retrieved chunks
+  for (const item of retrievedChunks) {
+    const doc = KNITTING_DOCUMENTS.find((d) => d.id === item.chunk.docId);
     if (doc) {
       for (const q of doc.starterQuestions) {
+        if (!suggestedSet.has(q) && q.toLowerCase() !== userQuery.toLowerCase().trim()) {
+          suggestedSet.add(q);
+        }
+      }
+    }
+  }
+
+  // Fallback to active video starter questions if too few
+  if (suggestedSet.size < 3 && videoId) {
+    const starterQs = getStarterQuestions(videoId);
+    for (const q of starterQs) {
+      if (!suggestedSet.has(q) && q.toLowerCase() !== userQuery.toLowerCase().trim()) {
         suggestedSet.add(q);
       }
     }
   }
 
-  // Fallback to general knitting questions
-  for (const q of GENERAL_STARTER_QUESTIONS) {
-    if (suggestedSet.size >= 4) break;
-    suggestedSet.add(q);
+  // Final fallback to general questions
+  if (suggestedSet.size < 3) {
+    for (const q of GENERAL_STARTER_QUESTIONS) {
+      if (!suggestedSet.has(q) && q.toLowerCase() !== userQuery.toLowerCase().trim()) {
+        suggestedSet.add(q);
+      }
+    }
   }
 
-  // Return top 3-4 unique relevant questions
-  return Array.from(suggestedSet).slice(0, 4);
+  return Array.from(suggestedSet).slice(0, 3);
 }
 
 /**
- * Returns starter questions when the user opens a specific video lesson or the main chat.
+ * Returns contextual starter questions for a specific video lesson.
  */
 export function getStarterQuestions(videoId?: string | null): string[] {
-  if (videoId) {
-    const match = videoId.match(/video-?(\d+)/i);
-    const order = match ? parseInt(match[1], 10) : 1;
-    const doc = KNITTING_DOCUMENTS.find((d) => d.videoOrder === order);
-    if (doc) {
-      return doc.starterQuestions;
-    }
-  }
-  return GENERAL_STARTER_QUESTIONS;
-}
+  if (!videoId) return GENERAL_STARTER_QUESTIONS.slice(0, 4);
 
+  const cleanId = videoId.toLowerCase();
+
+  // Part 1
+  if (cleanId.includes("video-1") || cleanId.includes("part-1")) {
+    return [
+      "What yarn and hook size does Suchita recommend for beginners?",
+      "How do I make a chain stitch step by step?",
+      "What is the difference between single crochet and half double crochet?",
+      "What are the 7 steps to make a double crochet?",
+    ];
+  }
+
+  // Part 2
+  if (cleanId.includes("video-2") || cleanId.includes("part-2")) {
+    return [
+      "What is the exact stitch sequence for making the crochet heart?",
+      "How do I make the treble crochets for the heart lobes?",
+      "How do I create the pointed bottom tip of the heart?",
+      "How do I pull the magic ring tight to close the center hole?",
+    ];
+  }
+
+  // Part 3
+  if (cleanId.includes("video-3") || cleanId.includes("part-3")) {
+    return [
+      "How do I start Round 1 of the pentagon with 5 corners?",
+      "What is the corner formula [1 DC, 2 ch, 1 DC] for Round 2?",
+      "Why must I not skip the final double crochet in Round 3?",
+      "How do I weave in yarn ends invisibly with a tapestry needle?",
+    ];
+  }
+
+  // Part 4
+  if (cleanId.includes("video-4") || cleanId.includes("part-4")) {
+    return [
+      "How do I make the 6 corners in Round 1 of the hexagon?",
+      "What is the corner pattern for Round 2 of the hexagon?",
+      "Why is the increased double crochet after the 6th corner critical?",
+      "How do I achieve clean, sharp geometric edges on the hexagon?",
+    ];
+  }
+
+  return GENERAL_STARTER_QUESTIONS.slice(0, 4);
+}

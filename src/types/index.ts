@@ -58,7 +58,7 @@ export interface RAGSource {
 }
 
 export interface VisionAssessment {
-  category: "slip_knot" | "yarn" | "needle" | "general";
+  category: "slip_knot" | "yarn" | "needle" | "general" | "heart" | "pentagon" | "hexagon" | "materials";
   status: "correct" | "needs_improvement" | "unclear";
   title: string;
   score: number;

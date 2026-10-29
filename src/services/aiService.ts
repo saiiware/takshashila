@@ -93,171 +93,100 @@ export async function assessKnittingPhoto(
 function fallbackClientVisionAnalysis(fileName: string, prompt: string): VisionAssessment {
   const hint = `${fileName} ${prompt}`.toLowerCase();
 
-  // Slip Knot tension analysis
-  if (hint.includes("tight")) {
+  // Heart shape inspection
+  if (hint.includes("heart") || hint.includes("हार्ट")) {
     return {
-      category: "slip_knot",
-      status: "needs_improvement",
-      title: "Slip Knot: Loop Pulled Too Tightly",
-      score: 5.0,
-      detected_items: ["Choked slip knot loop", "Knitting needle", "High tension"],
-      feedback:
-        "The slip knot is pulled too tightly around the needle shaft. This makes inserting the second needle difficult and leads to stiff, uneven fabric.",
-      solution:
-        "Lesson 3 rule: Keep the loops even and avoid pulling the yarn too tightly. Loosen the loop slightly so it glides smoothly along the needle.",
-      lesson_reference: "Lesson 3: Basic Process — Slip Knot to Fabric",
-      confidence: 0.92,
-      sources: [
-        {
-          videoId: "video-3",
-          videoTitle: "Lesson 3: Basic Process — Slip Knot to Fabric",
-          snippet: "Keep the loops even and avoid pulling the yarn too tightly, as this makes knitting difficult.",
-          score: 0.95,
-        },
-      ],
-    };
-  }
-
-  if (hint.includes("loose")) {
-    return {
-      category: "slip_knot",
-      status: "needs_improvement",
-      title: "Slip Knot: Loop Too Loose",
-      score: 5.5,
-      detected_items: ["Oversized slip knot loop", "Loose loop base", "Knitting needle"],
-      feedback:
-        "The slip knot loop is significantly loose and gappy. Loose loops can slip off the needle and cause the cast-on edge of your fabric to sag.",
-      solution:
-        "Lesson 3 rule: Gently pull the working yarn until the loop rests snug yet movable against the needle, keeping stitches even for a strong fabric.",
-      lesson_reference: "Lesson 3: Basic Process — Slip Knot to Fabric",
-      confidence: 0.91,
-      sources: [
-        {
-          videoId: "video-3",
-          videoTitle: "Lesson 3: Basic Process — Slip Knot to Fabric",
-          snippet: "The first step in knitting is to make a slip knot. Place the loop onto one needle and gently pull the yarn to tighten it.",
-          score: 0.94,
-        },
-      ],
-    };
-  }
-
-  if (hint.includes("slip") || hint.includes("knot")) {
-    return {
-      category: "slip_knot",
+      category: "heart",
       status: "correct",
-      title: "Slip Knot: Correct & Balanced Tension",
+      title: "Crochet Heart Shape Inspection (Part 2)",
       score: 9.5,
-      detected_items: ["Well-formed slip knot", "Balanced loop tension", "Knitting needle shaft"],
+      detected_items: ["Crochet heart motif", "Curved treble lobes", "Pointed bottom treble tip", "Closed magic ring"],
       feedback:
-        "Excellent technique! The slip knot is neatly seated on the needle with balanced tension. The loop is snug without being choked, ready for needle 2.",
+        "Excellent craftwork! The crochet heart has well-defined symmetrical lobes (3 treble crochets + 3 double crochets on each side) and a crisp bottom point formed by the central treble crochet.",
       solution:
-        "Next step from Lesson 3: Take the second needle, insert it into the loop, wrap the yarn around the needle, and gently pull through to form new connected loops.",
-      lesson_reference: "Lesson 3: Basic Process — Slip Knot to Fabric",
+        "Part 2 finishing: Ensure the magic ring tail is pulled tightly so no center gap remains, and weave the yarn tail securely into the stitches on the back side using a tapestry needle.",
+      lesson_reference: "Part 2: Cute Little Crochet Heart Shape",
       confidence: 0.95,
       sources: [
         {
-          videoId: "video-3",
-          videoTitle: "Lesson 3: Basic Process — Slip Knot to Fabric",
-          snippet: "Take the second needle and insert it into the loop. Wrap the yarn around the needle and gently pull it through.",
-          score: 0.96,
+          videoId: "part-2",
+          videoTitle: "Part 2: Cute Little Crochet Heart Shape (छोटूसा क्यूट हार्ट)",
+          snippet: "Work 3 chains, 3 treble crochets, 3 double crochets, chain 1, 1 treble crochet for bottom point, 3 double crochets, 3 treble crochets, chain 3, and slip stitch into magic ring.",
+          score: 0.97,
         },
       ],
     };
   }
 
-  // Yarn analysis
-  if (hint.includes("wool")) {
+  // Pentagon inspection
+  if (hint.includes("pentagon") || hint.includes("पंचकोन") || hint.includes("5") || hint.includes("पाच")) {
     return {
-      category: "yarn",
+      category: "pentagon",
       status: "correct",
-      title: "Yarn Identified: Wool Yarn (Winter & Sweaters)",
-      score: 9.0,
-      detected_items: ["Wool yarn ball", "Crimp/warm texture", "Winter knit gauge"],
+      title: "Crochet Pentagon Shape Inspection (Part 3)",
+      score: 9.5,
+      detected_items: ["5-sided pentagon", "5 distinct corner chain-2 spaces", "Balanced double crochet rows"],
       feedback:
-        "Identified as Wool Yarn. As taught in Lesson 2, wool yarn is warm, resilient, and elastic, making it the preferred choice for sweaters, winter garments, caps, and scarves.",
+        "Great geometric symmetry! The pentagon clearly shows 5 equal sides and 5 well-defined corner angles formed by the [1 DC, 2 ch, 1 DC] corner expansion.",
       solution:
-        "Lesson 2 advice: Match this thicker wool yarn with medium-to-thick needles to maintain ideal fabric drape, comfort, and durability.",
-      lesson_reference: "Lesson 2: Materials & Tools Knowledge",
-      confidence: 0.93,
-      sources: [
-        {
-          videoId: "video-2",
-          videoTitle: "Lesson 2: Materials & Tools Knowledge",
-          snippet: "Wool yarn is warm and suitable for sweaters and winter clothes. Selecting good quality yarn ensures the final product is soft and durable.",
-          score: 0.96,
-        },
-      ],
-    };
-  }
-
-  if (hint.includes("cotton")) {
-    return {
-      category: "yarn",
-      status: "correct",
-      title: "Yarn Identified: Cotton Yarn (Light & Breathable)",
-      score: 9.0,
-      detected_items: ["Cotton yarn skein", "Smooth plant fiber", "Compact strand"],
-      feedback:
-        "Identified as Cotton Yarn. In Lesson 2, cotton yarn is highlighted as lighter, smoother, and breathable, ideal for warmer weather and home items.",
-      solution:
-        "Lesson 2 advice: Cotton yarn has less stretch than wool, so practice keeping an even, relaxed tension to prevent tight stitches.",
-      lesson_reference: "Lesson 2: Materials & Tools Knowledge",
-      confidence: 0.93,
-      sources: [
-        {
-          videoId: "video-2",
-          videoTitle: "Lesson 2: Materials & Tools Knowledge",
-          snippet: "Cotton yarn is lighter and ideal for items used in warmer weather.",
-          score: 0.95,
-        },
-      ],
-    };
-  }
-
-  // Needle analysis
-  if (hint.includes("metal")) {
-    return {
-      category: "needle",
-      status: "correct",
-      title: "Needles Identified: Metal Needles",
-      score: 9.0,
-      detected_items: ["Metal needles", "Smooth metallic finish", "Tapered point tips"],
-      feedback:
-        "Identified as Metal Knitting Needles. Needles come in metal, wood, or plastic. Metal needles are very smooth, letting yarn glide quickly for faster knitting.",
-      solution:
-        "Lesson 2 advice: Ensure the needle size/gauge matches your yarn thickness. The size of the needle is selected based on yarn thickness and product type.",
-      lesson_reference: "Lesson 2: Materials & Tools Knowledge",
+        "Part 3 rule: Always remember to work the increased double crochet after the 5th corner in Round 3 before making your final slip stitch, ensuring clean symmetry.",
+      lesson_reference: "Part 3: Crochet Pentagon Shape — 5 Sides & 5 Corners",
       confidence: 0.94,
       sources: [
         {
-          videoId: "video-2",
-          videoTitle: "Lesson 2: Materials & Tools Knowledge",
-          snippet: "Knitting needles come in different materials like metal, wood, or plastic. The size of the needle is selected based on the yarn thickness.",
+          videoId: "part-3",
+          videoTitle: "Part 3: Crochet Pentagon Shape — 5 Sides & 5 Corners (पंचकोन)",
+          snippet: "Work 5 groups of [3 DC, Chain 2] in Round 1, expand corners with [1 DC, 2 ch, 1 DC] in Round 2 and 3, and do not skip the final increased DC.",
           score: 0.96,
         },
       ],
     };
   }
 
-  if (hint.includes("wood")) {
+  // Hexagon inspection
+  if (hint.includes("hexagon") || hint.includes("षटकोन") || hint.includes("6") || hint.includes("सहा")) {
     return {
-      category: "needle",
+      category: "hexagon",
       status: "correct",
-      title: "Needles Identified: Wooden / Bamboo Needles",
-      score: 9.0,
-      detected_items: ["Wooden needles", "Natural wood grain", "Gentle grip surface"],
+      title: "Crochet Hexagon Shape Inspection (Part 4)",
+      score: 9.5,
+      detected_items: ["6-sided hexagon", "6 geometric corner points", "Even double crochet stitches"],
       feedback:
-        "Identified as Wooden / Bamboo Needles. Wooden needles offer a gentle tactile grip that prevents slippery stitches from accidentally falling off—ideal for beginners.",
+        "Outstanding shape accuracy! The hexagon exhibits 6 sharp corners and balanced sides without flaring or curling.",
       solution:
-        "Lesson 2 advice: Pair wooden needles with wool or cotton yarn of suitable thickness to practice smooth stitch transfer and loop formation.",
-      lesson_reference: "Lesson 2: Materials & Tools Knowledge",
+        "Part 4 rule: Complete Round 3 by working the increased double crochet after the 6th corner before joining into the 3rd chain with a slip stitch.",
+      lesson_reference: "Part 4: Crochet Hexagon Shape — 6 Sides & 6 Corners",
+      confidence: 0.95,
+      sources: [
+        {
+          videoId: "part-4",
+          videoTitle: "Part 4: Crochet Hexagon Shape — 6 Sides & 6 Corners (षटकोन)",
+          snippet: "Round 1 creates 6 groups of [3 DC, Chain 2]. Expand corners with [1 DC, 2 ch, 1 DC] and weave in both yarn ends invisibly with a tapestry needle.",
+          score: 0.97,
+        },
+      ],
+    };
+  }
+
+  // Hook & Yarn analysis
+  if (hint.includes("hook") || hint.includes("हुक") || hint.includes("yarn") || hint.includes("यान") || hint.includes("olivia") || hint.includes("ganga")) {
+    return {
+      category: "materials",
+      status: "correct",
+      title: "Materials Verified: Ganga Olivia Yarn & Crochet Hook",
+      score: 9.2,
+      detected_items: ["Ganga Olivia acrylic yarn ball", "Crochet hook (4mm / 4.5mm)", "Smooth strand texture"],
+      feedback:
+        "Recommended materials identified! Suchita recommends Ganga Olivia acrylic yarn for beginners because acrylic yarn doesn't split easily and makes stitches clearly visible.",
+      solution:
+        "For Part 1 beginner chain and stitches, use a 4.5 mm hook. For Parts 2-4 (Heart, Pentagon, Hexagon shapes), use a 4.0 mm hook.",
+      lesson_reference: "Part 1 & Parts 2-4 Materials",
       confidence: 0.94,
       sources: [
         {
-          videoId: "video-2",
-          videoTitle: "Lesson 2: Materials & Tools Knowledge",
-          snippet: "Knitting needles come in different materials like metal, wood, or plastic. Using the right needles makes learning easier.",
+          videoId: "part-1",
+          videoTitle: "Part 1: Beginner Crochet Basics — Chain, Single, Half Double & Double Crochet",
+          snippet: "Beginners should use Ganga Olivia acrylic yarn and a 4.5mm hook for initial stitches, or a 4mm hook for shapes.",
           score: 0.95,
         },
       ],
@@ -268,21 +197,21 @@ function fallbackClientVisionAnalysis(fileName: string, prompt: string): VisionA
   return {
     category: "general",
     status: "correct",
-    title: "Knitting Work Inspection",
-    score: 8.5,
-    detected_items: ["Knitting craftwork", "Fiber / needle elements"],
+    title: "Crochet Work Inspection",
+    score: 9.0,
+    detected_items: ["Crochet craftwork", "Yarn loops & stitches", "Hook elements"],
     feedback:
-      "Knitting materials and craftwork detected. You can upload photos of your slip knot, yarn (wool vs cotton), or needles (metal vs wood) for targeted feedback.",
+      "Crochet craftwork detected! You can upload photos of your chain stitches, single/double crochet swatches, heart motif, pentagon, or hexagon for shape and tension feedback.",
     solution:
-      "Check Lesson 2 for materials and tools knowledge, and Lesson 3 for the step-by-step slip knot and loop creation process.",
-    lesson_reference: "Lesson 2 & Lesson 3",
-    confidence: 0.88,
+      "Refer to Part 1 for foundation stitches, Part 2 for the heart shape, Part 3 for the pentagon, and Part 4 for the hexagon.",
+    lesson_reference: "Crochet Craft Masterclass (Parts 1-4)",
+    confidence: 0.9,
     sources: [
       {
-        videoId: "video-3",
-        videoTitle: "Lesson 3: Basic Process — Slip Knot to Fabric",
-        snippet: "Learning the basic movements patiently helps build confidence and skill.",
-        score: 0.9,
+        videoId: "part-1",
+        videoTitle: "Part 1: Beginner Crochet Basics",
+        snippet: "Practice chains and stitches slowly with steady tension for even, beautiful crochet fabric.",
+        score: 0.92,
       },
     ],
   };
@@ -294,35 +223,32 @@ function fallbackClientVisionAnalysis(fileName: string, prompt: string): VisionA
  */
 export async function transcribeSpeech(
   videoId?: string | null,
-  language: Language = "en"
+  language: Language = "mr"
 ): Promise<string> {
   await delay(500);
 
   if (language === "mr") {
-    if (videoId?.includes("3")) {
-      return "सुया वापरून स्लिप नॉट आणि पहिला टाका कसा बनवायचा?";
-    }
     if (videoId?.includes("2")) {
-      return "लोकर आणि सुती धाग्यात काय फरक आहे?";
+      return "हार्ट शेप बनवण्यासाठी मॅजिक रिंग आणि ट्रिपल क्रोशे कसा करावा?";
     }
-    if (videoId?.includes("0")) {
-      return "मध्य पॅनेल मोजताना किती अतिरिक्त धागा सोडावा?";
+    if (videoId?.includes("3")) {
+      return "पंचकोन बनवताना शेवटचा डबल क्रोशे का स्किप करायचा नाही?";
     }
-    return "विणकाम सुरू करण्यासाठी कोणती साधने आवश्यक आहेत?";
+    if (videoId?.includes("4")) {
+      return "षटकोनाचे ६ कॉर्नर्स राउंड २ मध्ये कसे वाढवायचे?";
+    }
+    return "चेन स्टिच, सिंगल क्रोशे आणि डबल क्रोशे कसा बनवायचा?";
   }
 
-  if (videoId?.includes("0")) {
-    return "How much extra thread should I leave when measuring the center panel?";
+  if (videoId?.includes("2")) {
+    return "How do I make the treble crochets for the cute heart shape?";
   }
   if (videoId?.includes("3")) {
-    return "How do I make a slip knot and first loop with the needles?";
+    return "Why must I not skip the final double crochet in the pentagon?";
   }
-  if (videoId?.includes("2")) {
-    return "What is the difference between wool yarn and cotton yarn?";
-  }
-  if (videoId?.includes("1")) {
-    return "How do I present my knitted products attractively for exhibitions?";
+  if (videoId?.includes("4")) {
+    return "How do I make the 6 corners in Round 1 of the hexagon?";
   }
 
-  return "What tools and materials do I need to start knitting?";
+  return "What are the 7 steps to make a double crochet stitch?";
 }

@@ -1063,6 +1063,11 @@ CRITICAL RULES (STRICT COMPLIANCE):
    - SHORT & CONCISE: Limit the entire answer to 2 to 4 short sentences or concise unbolded bullet points.
    - SIMPLE & ACCESSIBLE: Avoid overly complex technical jargon.
 
+5. TOPIC SCOPE & BOUNDARIES:
+   - Answer all questions related or nearly related to crochet, knitting, stitching, sewing, embroidery, yarn crafts, fiber arts, and project styling (including color matching/combinations like what color goes with grey, pink, yellow, etc.).
+   - Strictly decline completely unrelated domains (such as makeup, cosmetics, skincare, cooking recipes, computer programming, sports, movies, finance, crypto, politics).
+   - If asked an unrelated topic, state directly that the question is irrelevant to this crafting masterclass and invite them to ask about knitting, crochet, stitching, or color combinations instead.
+
 COURSE CONTEXT:
 {context_text}
 
@@ -1070,17 +1075,20 @@ USER QUESTION:
 {question}"""
 
     candidate_models = [
+        "gemini-3.5-flash",
+        "gemini-3.8-flash",
+        "gemini-3.1-flash-lite",
         "gemini-flash-latest",
-        "gemini-flash-lite-latest",
-        "gemini-2.5-flash-lite",
-        "gemini-3.5-flash-lite",
     ]
 
     payload = {
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {
             "temperature": 0.2,
-            "maxOutputTokens": 350,
+            "maxOutputTokens": 2048,
+            "thinkingConfig": {
+                "thinkingBudget": 0
+            }
         },
     }
     payload_bytes = json.dumps(payload).encode("utf-8")
@@ -1094,7 +1102,7 @@ USER QUESTION:
             method="POST",
         )
         try:
-            with urllib.request.urlopen(req, timeout=5.5) as resp:
+            with urllib.request.urlopen(req, timeout=12.0) as resp:
                 if resp.status == 200:
                     resp_data = json.loads(resp.read().decode("utf-8"))
                     text = (
@@ -1117,11 +1125,10 @@ def generate_rag_answer(
     language: str = "en",
     video_id: Optional[str] = None,
 ) -> RAGAnswerResult:
-    """Produces final RAG answer, sanitizing any bold text, greetings, and extracting sources."""
+    """Produces final RAG answer using broad LLM reasoning with context grounding, sanitizing any bold text and greetings."""
+    effective_language = detect_language(question, language)
     answer: Optional[str] = None
     is_grounded = True
-
-    effective_language = detect_language(question, language)
 
     # 1. Attempt Gemini LLM generation if API key is provided
     api_key = _load_api_key()
@@ -1130,7 +1137,7 @@ def generate_rag_answer(
         if answer == NOT_AVAILABLE_MESSAGE:
             is_grounded = False
 
-    # 2. Fallback to local verified grounded generator
+    # 2. Fallback to local verified grounded generator if offline
     if not answer:
         answer, is_grounded = generate_local_answer(
             question, retrieved_chunks, effective_language, video_id=video_id

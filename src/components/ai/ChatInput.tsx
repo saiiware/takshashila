@@ -1,0 +1,545 @@
+import { useEffect, useRef, useState } from "react";
+import {
+  cleanTranscription,
+  setStoredGeminiApiKey,
+  startSpeechRecognition,
+  stopSpeechRecognition,
+  type SpeechLanguage,
+} from "@/services/speechService";
+
+export interface ChatImageAttachment {
+  dataUrl: string;
+  fileName: string;
+}
+
+interface ChatInputProps {
+  onSend: (text: string, image?: ChatImageAttachment) => void;
+  onMicPress?: () => void;
+  isRecording?: boolean;
+  isSending: boolean;
+  preferredLanguage?: "en" | "mr";
+}
+
+export default function ChatInput({
+  onSend,
+  isSending,
+  preferredLanguage = "en",
+}: ChatInputProps) {
+  const [text, setText] = useState("");
+  const [selectedImage, setSelectedImage] = useState<ChatImageAttachment | null>(null);
+  const [speechLang, setSpeechLang] = useState<SpeechLanguage>(preferredLanguage);
+  const [isListening, setIsListening] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const [statusHint, setStatusHint] = useState("");
+  const [interimText, setInterimText] = useState("");
+  const [speechError, setSpeechError] = useState<string | null>(null);
+  const [apiKeyInput, setApiKeyInput] = useState("");
+  const [keySavedToast, setKeySavedToast] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const textInputRef = useRef<HTMLInputElement>(null);
+  const stopSpeechRef = useRef<(() => Promise<void>) | null>(null);
+
+  // Sync speech language if preferredLanguage prop changes
+  useEffect(() => {
+    if (preferredLanguage) {
+      setSpeechLang(preferredLanguage);
+    }
+  }, [preferredLanguage]);
+
+  // Clean up any ongoing microphone sessions on unmount
+  useEffect(() => {
+    return () => {
+      stopSpeechRecognition();
+    };
+  }, []);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        setSelectedImage({
+          dataUrl: reader.result,
+          fileName: file.name,
+        });
+      }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
+
+  const handleRemoveImage = () => {
+    setSelectedImage(null);
+  };
+
+  const handleSend = () => {
+    if (isListening || isTranscribing) {
+      handleToggleSpeech();
+    }
+
+    const trimmed = text.trim();
+    if (!trimmed && !selectedImage) return;
+
+    const messageText =
+      trimmed ||
+      (selectedImage ? `Please inspect my knitting photo (${selectedImage.fileName})` : "");
+    onSend(messageText, selectedImage ?? undefined);
+    setText("");
+    setSelectedImage(null);
+    setInterimText("");
+    setStatusHint("");
+  };
+
+  const handleSaveApiKey = () => {
+    if (!apiKeyInput.trim()) return;
+    setStoredGeminiApiKey(apiKeyInput.trim());
+    setSpeechError(null);
+    setApiKeyInput("");
+    setKeySavedToast(true);
+    setTimeout(() => setKeySavedToast(false), 3000);
+  };
+
+  const handleUseSampleQuestion = () => {
+    const sample =
+      speechLang === "mr"
+        ? "विणकाम सुरू करण्यासाठी कोणती साधने आवश्यक आहेत?"
+        : "What tools and materials do I need to start knitting?";
+    setText(sample);
+    setSpeechError(null);
+    textInputRef.current?.focus();
+  };
+
+  const handleToggleSpeech = async () => {
+    setSpeechError(null);
+
+    // If currently recording/listening, stop and finalize
+    if (isListening || isTranscribing) {
+      setIsTranscribing(true);
+      setStatusHint(
+        speechLang === "mr"
+          ? "आवाज रूपांतरित होत आहे…"
+          : "Finalizing voice transcription…"
+      );
+
+      try {
+        if (stopSpeechRef.current) {
+          const fn = stopSpeechRef.current;
+          stopSpeechRef.current = null;
+          await fn();
+        } else {
+          stopSpeechRecognition();
+        }
+      } catch (err: any) {
+        setSpeechError(err?.message || "Transcription failed");
+      } finally {
+        setIsListening(false);
+        setIsTranscribing(false);
+        setInterimText("");
+        setStatusHint("");
+        textInputRef.current?.focus();
+      }
+      return;
+    }
+
+    // Starting a NEW voice recording attempt:
+    // Reset previous interim text and status
+    setInterimText("");
+    setStatusHint(
+      speechLang === "mr"
+        ? "मराठीत बोला (ऐकत आहे…)"
+        : "Listening in English (Speak now)…"
+    );
+
+    try {
+      const stopFn = await startSpeechRecognition(speechLang, {
+        onStart: () => {
+          setIsListening(true);
+          setIsTranscribing(false);
+          setSpeechError(null);
+        },
+        onStatusChange: (status) => {
+          setStatusHint(status);
+        },
+        onInterim: (interim) => {
+          const cleanInterim = cleanTranscription(interim);
+          if (cleanInterim) {
+            setInterimText(cleanInterim);
+          }
+        },
+        onResult: (finalTranscript) => {
+          const clean = cleanTranscription(finalTranscript);
+          if (clean) {
+            setInterimText("");
+            // Requirement 1: REPLACES the previously detected sentence completely!
+            setText(clean);
+            textInputRef.current?.focus();
+          }
+        },
+        onError: (err) => {
+          setSpeechError(err);
+          setIsListening(false);
+          setIsTranscribing(false);
+          setInterimText("");
+          setStatusHint("");
+        },
+        onEnd: () => {
+          setIsListening(false);
+          setIsTranscribing(false);
+          setInterimText("");
+          setStatusHint("");
+          stopSpeechRef.current = null;
+          textInputRef.current?.focus();
+        },
+      });
+
+      stopSpeechRef.current = stopFn;
+    } catch (err: any) {
+      setSpeechError(err.message || "Failed to start speech recognition.");
+      setIsListening(false);
+      setIsTranscribing(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-2">
+      {/* Selected Image Preview Bar */}
+      {selectedImage && (
+        <div className="flex items-center justify-between rounded-card border border-workshop-300 bg-workshop-50 p-2 text-sm shadow-2xs animate-fade-in">
+          <div className="flex items-center gap-2 overflow-hidden">
+            <img
+              src={selectedImage.dataUrl}
+              alt="Work preview"
+              className="h-12 w-12 rounded-md object-cover border border-workshop-200"
+            />
+            <div className="min-w-0">
+              <p className="truncate font-medium text-ink text-xs">{selectedImage.fileName}</p>
+              <p className="text-[11px] text-workshop-700">Photo ready for AI Computer Vision check</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleRemoveImage}
+            aria-label="Remove image"
+            className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-ink/60 border border-workshop-200 hover:text-clay-600 hover:bg-clay-50 transition-colors cursor-pointer"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
+      {/* Active Listening / Audio Processing Live Status Banner */}
+      {(isListening || isTranscribing) && (
+        <div className="flex items-center justify-between rounded-xl border border-red-200 bg-red-50/95 px-3 py-2 text-xs text-red-900 shadow-2xs animate-fade-in">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            {isTranscribing ? (
+              <span className="inline-block h-3.5 w-3.5 shrink-0 animate-spin rounded-full border-2 border-red-600 border-t-transparent" />
+            ) : (
+              <span className="relative flex h-3 w-3 shrink-0">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
+              </span>
+            )}
+            <div className="min-w-0 flex-1 truncate">
+              <span className="font-bold">
+                {statusHint ||
+                  (speechLang === "mr"
+                    ? "मराठीत ऐकत आहे… (Speak in Marathi)"
+                    : "Listening in English… (Speak now)")}
+              </span>
+              {interimText && (
+                <span className="ml-2 font-medium italic text-ink/80 truncate">
+                  "{interimText}"
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 shrink-0 ml-2">
+            <button
+              type="button"
+              onClick={handleToggleSpeech}
+              disabled={isTranscribing}
+              className="rounded-md bg-red-600 hover:bg-red-700 disabled:opacity-50 px-2.5 py-1 text-[11px] font-bold text-white shadow-2xs transition-colors cursor-pointer active:scale-95"
+            >
+              {isTranscribing
+                ? speechLang === "mr"
+                  ? "रूपांतरित होत आहे…"
+                  : "Processing…"
+                : speechLang === "mr"
+                ? "पूर्ण झाले (Done)"
+                : "Done"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Key Saved Success Banner */}
+      {keySavedToast && (
+        <div className="flex items-center gap-2 rounded-xl border border-green-300 bg-green-50 p-2.5 text-xs text-green-900 shadow-xs animate-fade-in">
+          <span className="text-base leading-none">✓</span>
+          <p className="font-semibold">
+            {speechLang === "mr"
+              ? "Gemini API Key यशस्वीरित्या जतन केली! आता व्हॉइस आणि AI सक्षम झाले आहेत."
+              : "Gemini API key saved! Cloud speech transcription and AI assistant are now enabled."}
+          </p>
+        </div>
+      )}
+
+      {/* Speech Error Banner */}
+      {speechError && (() => {
+        const isSecureContextError =
+          speechError.toLowerCase().includes("secure") ||
+          speechError.toLowerCase().includes("not secure") ||
+          speechError.toLowerCase().includes("ip ॲड्रेस") ||
+          speechError.toLowerCase().includes("सुरक्षित");
+
+        const isApiKeyError =
+          speechError.toLowerCase().includes("gemini api key") ||
+          speechError.toLowerCase().includes("api key") ||
+          speechError.toLowerCase().includes("api_key");
+
+        const isPermissionError =
+          speechError.toLowerCase().includes("permission") ||
+          speechError.toLowerCase().includes("परवानगी") ||
+          speechError.toLowerCase().includes("notallowederror");
+
+        return (
+          <div className="flex items-start justify-between rounded-xl border border-amber-300 bg-amber-50/95 p-3 text-xs text-amber-950 shadow-xs animate-fade-in">
+            <div className="flex items-start gap-2.5 min-w-0 flex-1">
+              <span className="text-base leading-none shrink-0">
+                {isApiKeyError ? "🔑" : isPermissionError ? "🎙️" : isSecureContextError ? "🔒" : "⚠️"}
+              </span>
+              <div className="space-y-1.5 flex-1 min-w-0">
+                <p className="font-semibold text-amber-900 leading-snug">
+                  {isApiKeyError
+                    ? speechLang === "mr"
+                      ? "Gemini API Key आवश्यक आहे (Cloud Voice Recognition)"
+                      : "Gemini API Key Needed for Cloud Speech Recognition"
+                    : speechError}
+                </p>
+
+                {/* Case 1: API Key Configuration */}
+                {isApiKeyError && (
+                  <div className="space-y-2 pt-0.5">
+                    <p className="text-[11px] text-amber-800/90 leading-normal">
+                      {speechLang === "mr"
+                        ? "ब्राउझरचे व्हॉइस रेकग्निशन या वातावरणात उपलब्ध नाही. उच्च अचूकतेच्या क्लाउड ट्रान्सक्रिप्शनसाठी Gemini API Key खाली प्रविष्ट करा (किंवा .env फाईलमध्ये VITE_GEMINI_API_KEY सेट करा):"
+                        : "Browser speech recognition is unavailable in this environment. To enable Gemini AI cloud voice transcription for English and Marathi, enter your Gemini API key below (or set VITE_GEMINI_API_KEY in .env):"}
+                    </p>
+                    <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                      <input
+                        type="password"
+                        value={apiKeyInput}
+                        onChange={(e) => setApiKeyInput(e.target.value)}
+                        placeholder="Paste Gemini API key (AIzaSy...)"
+                        className="min-w-[180px] flex-1 rounded-lg border border-amber-300 bg-white px-2.5 py-1.5 text-xs font-mono text-ink placeholder:text-ink/40 focus:border-workshop-500 focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleSaveApiKey}
+                        disabled={!apiKeyInput.trim()}
+                        className="rounded-lg bg-workshop-600 px-3 py-1.5 text-xs font-bold text-white shadow-2xs hover:bg-workshop-700 disabled:opacity-50 transition-colors cursor-pointer"
+                      >
+                        {speechLang === "mr" ? "की जतन करा" : "Save Key"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleUseSampleQuestion}
+                        className="rounded-lg border border-amber-400 bg-amber-100 px-2.5 py-1.5 text-xs font-semibold text-amber-950 hover:bg-amber-200 transition-colors cursor-pointer"
+                      >
+                        {speechLang === "mr" ? "नमुना प्रश्न वापरा" : "Try Sample Query"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Case 2: Secure Context Error */}
+                {isSecureContextError && (
+                  <>
+                    {typeof window !== "undefined" &&
+                      window.location.hostname !== "localhost" &&
+                      window.location.hostname !== "127.0.0.1" && (
+                        <div className="pt-1">
+                          <a
+                            href={`http://localhost:${window.location.port || "5173"}${window.location.pathname}${window.location.search}`}
+                            className="inline-flex items-center gap-1.5 rounded-lg bg-workshop-600 px-3 py-1.5 text-xs font-bold text-white shadow-2xs hover:bg-workshop-700 transition-colors"
+                          >
+                            <span>Switch to http://localhost:{window.location.port || "5173"}</span>
+                            <span>→</span>
+                          </a>
+                        </div>
+                      )}
+
+                    <p className="text-[11px] text-amber-800/90 leading-normal">
+                      <strong>Why this happened:</strong> Browsers require a <strong>Secure Context</strong> for microphone access. Any plain HTTP IP address (e.g. <code className="bg-amber-100 px-1 py-0.5 rounded font-mono text-[10px]">{typeof window !== "undefined" ? window.location.host : "192.168.x.x"}</code>) is labeled <em>"Not secure"</em> and the microphone is autoblocked. Opening <strong>http://localhost:5173</strong> is natively recognized as a secure context, allowing the microphone immediately!
+                    </p>
+                  </>
+                )}
+
+                {/* Case 3: Microphone Permission Blocked */}
+                {isPermissionError && (
+                  <p className="text-[11px] text-amber-800/90 leading-normal">
+                    {speechLang === "mr"
+                      ? "ब्राउझर ॲड्रेस बारमधील 🔒 किंवा मायक्रोफोन आयकॉनवर क्लिक करा आणि मायक्रोफोनला 'Allow' करा."
+                      : "Please click the lock or microphone icon (🔒) in your browser address bar and set Microphone permission to 'Allow'."}
+                  </p>
+                )}
+
+                {/* Case 4: Other general notices (e.g. no speech detected) */}
+                {!isApiKeyError && !isSecureContextError && !isPermissionError && (
+                  <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                    <p className="text-[11px] text-amber-800/90 leading-normal">
+                      {speechLang === "mr"
+                        ? "तुम्ही थेट खालील बॉक्समध्ये प्रश्न टाईप करू शकता किंवा नमुना प्रश्न वापरू शकता."
+                        : "You can also type your question directly in the text box below, or try a sample query."}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleUseSampleQuestion}
+                      className="shrink-0 rounded-lg border border-amber-400 bg-amber-100 px-2.5 py-1 text-[11px] font-semibold text-amber-950 hover:bg-amber-200 transition-colors cursor-pointer"
+                    >
+                      {speechLang === "mr" ? "नमुना प्रश्न" : "Try Sample Query"}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSpeechError(null)}
+              aria-label="Dismiss error"
+              className="ml-2 shrink-0 rounded p-1 text-amber-700 hover:text-amber-950 hover:bg-amber-100 transition-colors cursor-pointer"
+            >
+              ✕
+            </button>
+          </div>
+        );
+      })()}
+
+      {/* Main Input Controls Row */}
+      <div className="flex items-center gap-1.5 sm:gap-2">
+        <input
+          type="file"
+          ref={fileInputRef}
+          accept="image/*"
+          onChange={handleFileChange}
+          className="hidden"
+          id="photo-upload-input"
+        />
+
+        {/* Camera / Photo Upload Button */}
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          title="Upload photo of your knitting (Slip knot, yarn, or needles)"
+          aria-label="Upload photo of your knitting"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-line bg-white text-workshop-600 shadow-2xs transition-colors hover:border-workshop-400 hover:bg-workshop-50 active:scale-95 cursor-pointer"
+        >
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </button>
+
+        {/* Microphone / Speech-to-Text Button */}
+        <button
+          type="button"
+          onClick={handleToggleSpeech}
+          disabled={isSending}
+          title={
+            isListening || isTranscribing
+              ? "Recording in progress... Click to finish"
+              : speechLang === "mr"
+              ? "मराठीत बोलण्यासाठी क्लिक करा (Speech to Text in Marathi)"
+              : "Click to speak your question in English (Speech to Text)"
+          }
+          aria-label={isListening ? "Stop voice recording" : "Start voice recording"}
+          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border transition-all active:scale-95 cursor-pointer ${
+            isListening || isTranscribing
+              ? "border-red-500 bg-red-600 text-white shadow-md animate-pulse ring-2 ring-red-400"
+              : "border-line bg-white text-workshop-600 shadow-2xs hover:border-workshop-400 hover:bg-workshop-50"
+          }`}
+        >
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+            />
+          </svg>
+        </button>
+
+        {/* Speech Language Switcher Toggle (EN / मराठी) */}
+        <div
+          className="flex h-11 shrink-0 items-center rounded-xl border border-line bg-white p-0.5 shadow-2xs"
+          title="Switch speech language between English and Marathi"
+        >
+          <button
+            type="button"
+            onClick={() => setSpeechLang("en")}
+            disabled={isListening || isTranscribing}
+            className={`h-full rounded-lg px-2 text-xs font-bold transition-all cursor-pointer ${
+              speechLang === "en"
+                ? "bg-workshop-600 text-white shadow-2xs"
+                : "text-ink/60 hover:text-ink hover:bg-workshop-50"
+            } ${isListening || isTranscribing ? "opacity-60 cursor-not-allowed" : ""}`}
+          >
+            EN
+          </button>
+          <button
+            type="button"
+            onClick={() => setSpeechLang("mr")}
+            disabled={isListening || isTranscribing}
+            className={`h-full rounded-lg px-2 text-xs font-bold transition-all cursor-pointer ${
+              speechLang === "mr"
+                ? "bg-workshop-600 text-white shadow-2xs"
+                : "text-ink/60 hover:text-ink hover:bg-workshop-50"
+            } ${isListening || isTranscribing ? "opacity-60 cursor-not-allowed" : ""}`}
+          >
+            मराठी
+          </button>
+        </div>
+
+        {/* Text Input Field */}
+        <input
+          ref={textInputRef}
+          type="text"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleSend();
+          }}
+          placeholder={
+            selectedImage
+              ? "Add an optional question..."
+              : speechLang === "mr"
+              ? "प्रश्न टाईप करा किंवा माइकने बोला…"
+              : "Type question or use mic to speak…"
+          }
+          aria-label="Type your question for the AI assistant"
+          className="min-w-0 flex-1 rounded-xl border border-line bg-white px-3.5 py-2.5 text-sm sm:text-base
+            placeholder:text-ink/40 focus:border-workshop-500 focus:outline-none"
+        />
+
+        {/* Send Button */}
+        <button
+          type="button"
+          onClick={handleSend}
+          disabled={isSending || (!text.trim() && !selectedImage)}
+          aria-label="Send message"
+          className="flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-turmeric-500 px-3.5 sm:px-4 text-sm font-bold text-workshop-900 shadow-xs
+            transition-all hover:bg-turmeric-400 disabled:cursor-not-allowed disabled:opacity-40 active:scale-95 cursor-pointer"
+        >
+          <span>Send</span>
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
+}

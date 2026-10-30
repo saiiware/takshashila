@@ -58,85 +58,14 @@ export default function VideoPage() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* 1. Lesson Introduction Shifted to Top (Above Video and AI Chatbot) */}
-      <Card className="border-workshop-200 bg-white shadow-xs">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div className="space-y-2 flex-1 min-w-0">
-            {/* Meta Tags & Breadcrumb */}
-            <div className="flex flex-wrap items-center gap-2">
-              <Link
-                to="/course"
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-workshop-600 hover:text-workshop-700 hover:underline"
-              >
-                <span>←</span> Back to Course
-              </Link>
-              <span className="text-ink/30">•</span>
-              <span className="rounded-full bg-workshop-100 px-2.5 py-0.5 text-xs font-bold text-workshop-800">
-                {`Part ${video.order} of ${MOCK_COURSE.totalVideos}`}
-              </span>
-              <span className="rounded-full bg-paper px-2.5 py-0.5 text-xs font-medium text-ink/60 border border-line flex items-center gap-1">
-                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {video.durationMinutes} min
-              </span>
-              {isCompleted && (
-                <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-800 border border-emerald-200">
-                  ✓ Completed
-                </span>
-              )}
-            </div>
-
-            {/* Title & Description */}
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-ink tracking-tight">
-              {video.title}
-            </h1>
-            <p className="text-sm md:text-base text-ink/70 leading-relaxed max-w-4xl">
-              {video.description}
-            </p>
-          </div>
-
-          {/* Action Controls: Mark Completed & Lesson Navigation */}
-          <div className="flex flex-wrap items-center gap-2.5 shrink-0 pt-2 lg:pt-0">
-            <Button
-              variant={isCompleted ? "ghost" : "secondary"}
-              onClick={handleMarkCompleted}
-              disabled={isCompleted}
-              className="shadow-2xs text-xs sm:text-sm"
-            >
-              {isCompleted ? "✓ Completed" : "Mark as Completed"}
-            </Button>
-
-            <div className="flex items-center gap-1.5 border-l border-line pl-2.5">
-              <Button
-                variant="ghost"
-                onClick={() => previousVideo && goToVideo(previousVideo.id)}
-                disabled={!previousVideo}
-                className="text-xs sm:text-sm px-2.5"
-                title="Go to previous lesson"
-              >
-                ← Prev
-              </Button>
-              <Button
-                onClick={() => nextVideo && goToVideo(nextVideo.id)}
-                disabled={!nextVideo}
-                className="text-xs sm:text-sm px-3"
-                title="Go to next lesson"
-              >
-                Next →
-              </Button>
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      {/* 2. Side-by-Side Main Area: Large Video Player (Left) + Large AI Chatbot Card (Right) */}
+    <div className="space-y-4 sm:space-y-6">
+      {/* Side-by-Side Main Area: Left (Video Player & Timestamps) + Right (AI Learning Assistant) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 xl:gap-8 items-start">
-        {/* Left Column: Enlarged Video Player & Timestamps */}
-        <div className="lg:col-span-6 xl:col-span-6 space-y-4">
+        {/* Left Column: Video Player, Title, and Chapter / Timestamp Navigation */}
+        <div className="lg:col-span-7 xl:col-span-7 space-y-4">
+          {/* 1. Video Player */}
           {video.videoUrl ? (
-            <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-black shadow-md">
+            <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-black shadow-sm border border-workshop-200">
               <video
                 ref={videoRef}
                 controls
@@ -152,7 +81,7 @@ export default function VideoPage() {
             </div>
           ) : (
             <div
-              className="flex aspect-video w-full items-center justify-center rounded-2xl text-white shadow-md"
+              className="flex aspect-video w-full items-center justify-center rounded-2xl text-white shadow-sm"
               style={{ backgroundColor: video.thumbnailColor }}
             >
               <div className="text-center">
@@ -168,14 +97,80 @@ export default function VideoPage() {
             </div>
           )}
 
-          {/* Interactive Timestamps for Quick Seeking */}
-          {activeTimestamps.length > 0 && (
-            <div className="rounded-card border border-workshop-200 bg-workshop-50/70 p-4 space-y-2.5">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-workshop-800 flex items-center gap-1.5">
-                  Interactive Video Timestamps:
+          {/* 2. Video Title, Meta, and Action Controls */}
+          <div className="space-y-3 rounded-2xl border border-workshop-200/90 bg-white p-4 sm:p-5 shadow-2xs">
+            {/* Meta Row: Back button, Part badge, Duration, Completed badge, and Prev/Next */}
+            <div className="flex flex-wrap items-center justify-between gap-2.5">
+              <div className="flex flex-wrap items-center gap-2">
+                <Link
+                  to="/course"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-workshop-600 hover:text-workshop-700 hover:underline"
+                >
+                  <span>←</span> Courses
+                </Link>
+                <span className="text-ink/30">•</span>
+                <span className="rounded-full bg-workshop-100 px-2.5 py-0.5 text-xs font-bold text-workshop-800">
+                  {`Part ${video.order} of ${MOCK_COURSE.totalVideos}`}
                 </span>
-                <span className="text-[11px] text-ink/60">Click any timestamp to seek</span>
+                <span className="rounded-full bg-paper px-2.5 py-0.5 text-xs font-medium text-ink/60 border border-line">
+                  ⏱ {video.durationMinutes} min
+                </span>
+                {isCompleted && (
+                  <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-800 border border-emerald-200">
+                    ✓ Completed
+                  </span>
+                )}
+              </div>
+
+              {/* Action Buttons: Prev, Next, Mark as Completed */}
+              <div className="flex items-center gap-1.5">
+                <Button
+                  variant="ghost"
+                  onClick={() => previousVideo && goToVideo(previousVideo.id)}
+                  disabled={!previousVideo}
+                  className="text-xs px-2.5 py-1.5"
+                  title="Previous lesson"
+                >
+                  ← Prev
+                </Button>
+                <Button
+                  onClick={() => nextVideo && goToVideo(nextVideo.id)}
+                  disabled={!nextVideo}
+                  className="text-xs px-3 py-1.5"
+                  title="Next lesson"
+                >
+                  Next →
+                </Button>
+                <Button
+                  variant={isCompleted ? "ghost" : "secondary"}
+                  onClick={handleMarkCompleted}
+                  disabled={isCompleted}
+                  className="shadow-2xs text-xs px-3 py-1.5"
+                >
+                  {isCompleted ? "✓ Completed" : "Mark as Completed"}
+                </Button>
+              </div>
+            </div>
+
+            {/* Title & Description */}
+            <div>
+              <h1 className="text-lg sm:text-xl lg:text-2xl font-extrabold text-ink tracking-tight">
+                {video.title}
+              </h1>
+              <p className="mt-1 text-xs sm:text-sm text-ink/70 leading-relaxed">
+                {video.description}
+              </p>
+            </div>
+          </div>
+
+          {/* 3. Chapter / Timestamp Navigation (Matching wireframe placement) */}
+          {activeTimestamps.length > 0 && (
+            <div className="rounded-2xl border border-workshop-200/90 bg-white p-4 sm:p-5 shadow-2xs space-y-3">
+              <div className="flex items-center justify-between border-b border-workshop-100 pb-2">
+                <h3 className="text-sm sm:text-base font-bold text-ink">
+                  Chapter / Timestamp Navigation
+                </h3>
+                <span className="text-[11px] text-ink/50">Click to jump to time</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {activeTimestamps.map((ts, idx) => (
@@ -183,12 +178,12 @@ export default function VideoPage() {
                     key={idx}
                     type="button"
                     onClick={() => seekVideo(ts.seconds)}
-                    className="flex items-center gap-2 rounded-lg bg-white border border-workshop-200 px-3 py-2 text-xs text-left hover:border-workshop-400 hover:bg-workshop-100/60 transition-all shadow-2xs group cursor-pointer"
+                    className="flex items-center gap-2.5 rounded-xl bg-workshop-50/70 border border-workshop-200 px-3 py-2 text-xs text-left hover:border-workshop-400 hover:bg-workshop-100/70 transition-all shadow-2xs group cursor-pointer"
                   >
-                    <span className="font-extrabold text-workshop-700 bg-workshop-100 px-2 py-0.5 rounded text-[11px]">
+                    <span className="font-extrabold text-workshop-700 bg-white border border-workshop-200 px-2 py-0.5 rounded-md text-[11px] shrink-0 group-hover:border-workshop-400">
                       {ts.time}
                     </span>
-                    <span className="truncate text-ink/80 group-hover:text-ink font-medium">
+                    <span className="truncate text-ink/80 group-hover:text-ink font-semibold">
                       {ts.label}
                     </span>
                   </button>
@@ -198,10 +193,10 @@ export default function VideoPage() {
           )}
         </div>
 
-        {/* Right Column: Enlarged AI Chatbot Card Side-by-Side with Video */}
-        <div className="lg:col-span-6 xl:col-span-6 lg:sticky lg:top-20">
-          <Card className="flex flex-col h-[640px] lg:h-[calc(100vh-8rem)] min-h-[600px] max-h-[920px] shadow-sm border-2 border-workshop-200/90 rounded-2xl p-0 overflow-hidden bg-white">
-            <div className="flex flex-col h-full p-4 sm:p-6">
+        {/* Right Column: AI Learning Assistant Card */}
+        <div className="lg:col-span-5 xl:col-span-5 lg:sticky lg:top-20">
+          <Card className="flex flex-col h-[650px] lg:h-[calc(100vh-6rem)] min-h-[580px] max-h-[880px] shadow-sm border border-workshop-200/90 rounded-2xl p-0 overflow-hidden bg-white">
+            <div className="flex flex-col h-full p-4 sm:p-5">
               <AIAssistantPanel videoId={video.id} videoTitle={video.title} />
             </div>
           </Card>

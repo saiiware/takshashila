@@ -63,7 +63,7 @@ export default function ChatInput({
   const [isShift, setIsShift] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const textInputRef = useRef<HTMLInputElement>(null);
+  const textInputRef = useRef<HTMLTextAreaElement>(null);
   const stopSpeechRef = useRef<(() => Promise<void>) | null>(null);
 
   // Sync keyboard and speech language if preferredLanguage prop changes
@@ -118,6 +118,15 @@ export default function ChatInput({
       }, 0);
     }
   };
+
+  // Auto-resize textarea height as content changes so user sees everything typed
+  useEffect(() => {
+    const el = textInputRef.current;
+    if (el) {
+      el.style.height = "auto";
+      el.style.height = `${Math.min(el.scrollHeight, 140)}px`;
+    }
+  }, [text]);
 
   // Clean up any ongoing microphone sessions on unmount
   useEffect(() => {
@@ -375,7 +384,10 @@ export default function ChatInput({
           {/* Top Bar: Title, Language Switcher, Category Tabs, Close */}
           <div className="flex flex-wrap items-center justify-between gap-1.5 border-b border-workshop-200/80 pb-2">
             <div className="flex items-center gap-1.5">
-              <span className="text-sm">⌨️</span>
+              <svg className="h-4 w-4 text-workshop-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <rect x="2" y="4" width="20" height="16" rx="3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h.01M10 12h.01M14 12h.01M18 12h.01M8 16h8" />
+              </svg>
               <span className="text-xs font-bold text-ink">
                 {keyboardLang === "mr" ? "मराठी कीबोर्ड" : "English Keyboard"}
               </span>
@@ -716,8 +728,8 @@ export default function ChatInput({
         </div>
       )}
 
-      {/* Main Input Controls Row */}
-      <div className="flex items-center gap-1.5 sm:gap-2">
+      {/* Main Unified Input Box: Full-Length Textarea + Minimized Controls */}
+      <div className="rounded-2xl border border-workshop-300 bg-white p-2.5 sm:p-3 shadow-2xs space-y-2 focus-within:border-workshop-500 focus-within:ring-1 focus-within:ring-workshop-400 transition-all">
         <input
           type="file"
           ref={fileInputRef}
@@ -727,136 +739,110 @@ export default function ChatInput({
           id="photo-upload-input"
         />
 
-        {/* Camera / Photo Upload Button */}
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          title="Upload photo of your knitting (Slip knot, yarn, or needles)"
-          aria-label="Upload photo of your knitting"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-line bg-white text-workshop-600 shadow-2xs transition-colors hover:border-workshop-400 hover:bg-workshop-50 active:scale-95 cursor-pointer"
-        >
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-        </button>
-
-        {/* Microphone / Speech-to-Text Button */}
-        <button
-          type="button"
-          onClick={handleToggleSpeech}
-          disabled={isSending}
-          title={
-            isListening || isTranscribing
-              ? "Recording in progress... Click to finish"
-              : speechLang === "mr"
-              ? "मराठीत बोलण्यासाठी क्लिक करा (Speech to Text in Marathi)"
-              : "Click to speak your question in English (Speech to Text)"
-          }
-          aria-label={isListening ? "Stop voice recording" : "Start voice recording"}
-          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border transition-all active:scale-95 cursor-pointer ${
-            isListening || isTranscribing
-              ? "border-red-500 bg-red-600 text-white shadow-md animate-pulse ring-2 ring-red-400"
-              : "border-line bg-white text-workshop-600 shadow-2xs hover:border-workshop-400 hover:bg-workshop-50"
-          }`}
-        >
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
-            />
-          </svg>
-        </button>
-
-        {/* Speech Language Switcher Toggle (EN / मराठी) */}
-        <div
-          className="flex h-11 shrink-0 items-center rounded-xl border border-line bg-white p-0.5 shadow-2xs"
-          title="Switch speech language between English and Marathi"
-        >
-          <button
-            type="button"
-            onClick={() => setSpeechLang("en")}
-            disabled={isListening || isTranscribing}
-            className={`h-full rounded-lg px-2 text-xs font-bold transition-all cursor-pointer ${
-              speechLang === "en"
-                ? "bg-workshop-600 text-white shadow-2xs"
-                : "text-ink/60 hover:text-ink hover:bg-workshop-50"
-            } ${isListening || isTranscribing ? "opacity-60 cursor-not-allowed" : ""}`}
-          >
-            EN
-          </button>
-          <button
-            type="button"
-            onClick={() => setSpeechLang("mr")}
-            disabled={isListening || isTranscribing}
-            className={`h-full rounded-lg px-2 text-xs font-bold transition-all cursor-pointer ${
-              speechLang === "mr"
-                ? "bg-workshop-600 text-white shadow-2xs"
-                : "text-ink/60 hover:text-ink hover:bg-workshop-50"
-            } ${isListening || isTranscribing ? "opacity-60 cursor-not-allowed" : ""}`}
-          >
-            मराठी
-          </button>
-        </div>
-
-        {/* Virtual On-Screen Keyboard Toggle Button (⌨️) */}
-        <button
-          type="button"
-          onClick={() => {
-            setShowKeyboard((prev) => !prev);
-          }}
-          title={
-            showKeyboard
-              ? "Close on-screen keyboard (कीबोर्ड बंद करा)"
-              : "Open on-screen keyboard for Marathi or English (ऑन-स्क्रीन कीबोर्ड उघडा)"
-          }
-          aria-label={showKeyboard ? "Close on-screen keyboard" : "Open on-screen keyboard"}
-          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border transition-all active:scale-95 cursor-pointer ${
-            showKeyboard
-              ? "border-workshop-600 bg-workshop-100 text-workshop-900 shadow-sm ring-2 ring-workshop-400"
-              : "border-line bg-white text-workshop-600 shadow-2xs hover:border-workshop-400 hover:bg-workshop-50"
-          }`}
-        >
-          <span className="text-lg leading-none" role="img" aria-hidden="true">⌨️</span>
-        </button>
-
-        {/* Text Input Field */}
-        <input
+        {/* 1. Full-Length Multiline Textarea: user can see all text typed */}
+        <textarea
           ref={textInputRef}
-          type="text"
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter") handleSend();
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleSend();
+            }
           }}
+          rows={1}
           placeholder={
             selectedImage
               ? "Add an optional question..."
-              : speechLang === "mr"
-              ? "प्रश्न टाईप करा किंवा माइकने बोला…"
-              : "Type question or use mic to speak…"
+              : "Type your question... (Enter to send, Shift+Enter for new line)"
           }
           aria-label="Type your question for the AI assistant"
-          className="min-w-0 flex-1 rounded-xl border border-line bg-white px-3.5 py-2.5 text-sm sm:text-base
-            placeholder:text-ink/40 focus:border-workshop-500 focus:outline-none"
+          className="w-full resize-none border-0 bg-transparent px-1 py-0.5 text-sm sm:text-base text-ink placeholder:text-ink/40 focus:outline-none focus:ring-0 min-h-[48px] max-h-40 overflow-y-auto leading-relaxed"
         />
 
-        {/* Send Button */}
-        <button
-          type="button"
-          onClick={handleSend}
-          disabled={isSending || (!text.trim() && !selectedImage)}
-          aria-label="Send message"
-          className="flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-turmeric-500 px-3.5 sm:px-4 text-sm font-bold text-workshop-900 shadow-xs
-            transition-all hover:bg-turmeric-400 disabled:cursor-not-allowed disabled:opacity-40 active:scale-95 cursor-pointer"
-        >
-          <span>Send</span>
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-          </svg>
-        </button>
+        {/* 2. Bottom Actions Row: Minimized Options (Left) + Send Button (Right) */}
+        <div className="flex items-center justify-between pt-1 border-t border-workshop-100">
+          {/* Minimized Options: Photo, Voice, Keypad */}
+          <div className="flex items-center gap-1">
+            {/* Minimal Photo / Image Upload Button */}
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              title="Attach photo of knitting or crochet work"
+              aria-label="Attach photo"
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-workshop-700 hover:text-workshop-900 hover:bg-workshop-100 transition-colors cursor-pointer active:scale-95"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </button>
+
+            {/* Minimal Voice / Speech-to-Text Button */}
+            <button
+              type="button"
+              onClick={handleToggleSpeech}
+              disabled={isSending}
+              title={
+                isListening || isTranscribing
+                  ? "Recording audio... Click to finish"
+                  : "Speak your question (Voice input)"
+              }
+              aria-label={isListening ? "Stop voice recording" : "Start voice recording"}
+              className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors cursor-pointer active:scale-95 ${
+                isListening || isTranscribing
+                  ? "bg-red-600 text-white animate-pulse"
+                  : "text-workshop-700 hover:text-workshop-900 hover:bg-workshop-100"
+              }`}
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+                />
+              </svg>
+            </button>
+
+            {/* Minimal Virtual Keypad Toggle Button */}
+            <button
+              type="button"
+              onClick={() => setShowKeyboard((prev) => !prev)}
+              title={
+                showKeyboard
+                  ? "Close on-screen keypad (कीबोर्ड बंद करा)"
+                  : "Open on-screen Marathi / English keypad (कीबोर्ड उघडा)"
+              }
+              aria-label={showKeyboard ? "Close on-screen keypad" : "Open on-screen keypad"}
+              className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors cursor-pointer active:scale-95 ${
+                showKeyboard
+                  ? "bg-workshop-200 text-workshop-900 font-bold ring-1 ring-workshop-400"
+                  : "text-workshop-700 hover:text-workshop-900 hover:bg-workshop-100"
+              }`}
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <rect x="2" y="4" width="20" height="16" rx="3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h.01M10 12h.01M14 12h.01M18 12h.01M8 16h8" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Send Button */}
+          <button
+            type="button"
+            onClick={handleSend}
+            disabled={isSending || (!text.trim() && !selectedImage)}
+            aria-label="Send message"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-turmeric-500 text-workshop-900 shadow-xs
+              transition-all hover:bg-turmeric-400 disabled:cursor-not-allowed disabled:opacity-40 active:scale-95 cursor-pointer font-bold"
+            title="Send question (Enter)"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -198,7 +198,7 @@ export function getStarterQuestions(videoId?: string | null): string[] {
   // Part 1
   if (cleanId.includes("video-1") || cleanId.includes("part-1")) {
     return [
-      "What yarn and hook size does Suchita recommend for beginners?",
+      "What yarn and hook size is recommended for beginners?",
       "How do I make a chain stitch step by step?",
       "What is the difference between single crochet and half double crochet?",
       "What are the 7 steps to make a double crochet?",

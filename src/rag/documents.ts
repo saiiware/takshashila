@@ -12,10 +12,10 @@ export interface KnowledgeDocument {
   starterQuestions: string[];
 }
 
-export const PART1_TEXT = `व्हिडिओ १: क्रोशे बेसिक — चेन, सिंगल क्रोशे, हाफ डबल क्रोशे आणि डबल क्रोशे (Part 1: Beginner Crochet Basics by Suchita).
+export const PART1_TEXT = `व्हिडिओ १: क्रोशे बेसिक — चेन, सिंगल क्रोशे, हाफ डबल क्रोशे आणि डबल क्रोशे (Part 1: Crochet Basics (क्रोशे बेसिक)).
 
-[00:00 - 00:36] Introduction by Suchita:
-हॅलो एव्हरीवन, मी आहे सुचिता. मी एक क्रोशे आर्टिस्ट आणि डेंटिस्ट आहे. मी हे YouTube चॅनल सुरू करत आहे. आजचा व्हिडिओ एकदम बिगिनर लोकांसाठी आहे ज्यांना क्रोशे शिकायचं आहे. क्रोशे हा सध्या खूप ट्रेंडिंग आणि एस्थेटिक (Pinterest trending) विषय आहे. तुम्ही छान आणि क्यूट वस्तू बनवू शकता. आज आपण शिकणार आहोत: यान कसे पकडायचे, हुक कोणते वापरायचे, आणि बेसिक स्टिचेस.
+[00:00 - 00:36] Introduction & Materials:
+हॅलो एव्हरीवन, आजचा व्हिडिओ एकदम बिगिनर लोकांसाठी आहे ज्यांना क्रोशे शिकायचं आहे. क्रोशे हा सध्या खूप ट्रेंडिंग आणि एस्थेटिक विषय आहे. तुम्ही छान आणि क्यूट वस्तू बनवू शकता. आज आपण शिकणार आहोत: यान कसे पकडायचे, हुक कोणते वापरायचे, आणि बेसिक स्टिचेस.
 
 [00:37 - 00:57] Materials & Tools Required (साहित्य):
 १. यान बॉल (Yarn ball): गंगा कंपनीचा "ऑलिव्हिया" (Ganga Olivia) अक्रिलिक यान (Acrylic yarn). नवशिक्यांनी अक्रिलिक याननेच सुरुवात करावी.
@@ -66,7 +66,7 @@ export const PART1_TEXT = `व्हिडिओ १: क्रोशे बे�
 - व्हिडिओ थांबवून थांबवून बघा आणि स्पीड स्लो करून सोबत ट्राय करा.
 - स्टेप्स १ ते ७ लक्षात ठेवा म्हणजे काम सोपे होईल.`;
 
-export const PART2_TEXT = `व्हिडिओ २: क्रोशेने छोटूसा क्यूट हार्ट शेप बनवणे (Part 2: Cute Little Crochet Heart Shape by Suchita - Episode 4 of Shapes Series).
+export const PART2_TEXT = `व्हिडिओ २: क्रोशेने छोटूसा क्यूट हार्ट शेप बनवणे (Part 2: Crochet Heart Shape (छोटूसा क्यूट हार्ट)).
 
 [00:00 - 00:28] Intro & Materials:
 हॅलो एव्हरीवन, हा आपला चौथा एपिसोड आहे ज्यामध्ये आपण क्रोशेने विविध शेप्स शिकत आहोत. आज आपण शिकणार आहोत हा छोटूसा आणि क्यूट हार्ट (Heart Shape).
@@ -110,7 +110,7 @@ export const PART2_TEXT = `व्हिडिओ २: क्रोशेने �
 ४. टेपेस्ट्री नीडलने पाठीमागच्या टाक्यांमधून धागा ओवून लपवा (weave in ends) आणि फिनिशिंग करा.
 सुंदर आणि क्यूट छोटूसा हार्ट तयार झाला!`;
 
-export const PART3_TEXT = `व्हिडिओ ३: क्रोशेने पंचकोन (Pentagon) कसा बनवायचा — ५ बाजू आणि ५ कोपरे (Part 3: Crochet Pentagon Shape by Suchita - Episode 3 of Shapes Series).
+export const PART3_TEXT = `व्हिडिओ ३: क्रोशेने पंचकोन (Pentagon) कसा बनवायचा — ५ बाजू आणि ५ कोपरे (Part 3: Crochet Pentagon Shape (पंचकोन)).
 
 [00:01 - 00:26] Intro to Pentagon Shape:
 नमस्कार सगळ्यांना, आजच्या व्हिडिओमध्ये आपण शिकणार आहोत हा पंचकोन (Pentagon), ज्याला ५ बाजू (5 sides) आणि ५ कोपरे (5 corners) असतात. हा आपल्या सिरीजचा तिसरा एपिसोड आहे.
@@ -148,7 +148,7 @@ export const PART3_TEXT = `व्हिडिओ ३: क्रोशेने �
 २. टेपेस्ट्री नीडलमध्ये धागा ओवून मागच्या २-३ टाक्यांमधून लपवून (hide) घ्या आणि उरलेला धागा कापा.
 ३. यामुळे धागा कुठे लपवला हे ओळखूही येत नाही आणि पंचकोनाला एकदम शार्प एजेस मिळतात!`;
 
-export const PART4_TEXT = `व्हिडिओ ४: क्रोशेने षटकोन (Hexagon) कसा बनवायचा — ६ बाजू आणि ६ कोपरे (Part 4: Crochet Hexagon Shape by Suchita - Episode 2 of Shapes Series).
+export const PART4_TEXT = `व्हिडिओ ४: क्रोशेने षटकोन (Hexagon) कसा बनवायचा — ६ बाजू आणि ६ कोपरे (Part 4: Crochet Hexagon Shape (षटकोन)).
 
 [00:00 - 00:34] Intro to Hexagon Shape:
 हॅलो एव्हरीवन, आज आपण शिकणार आहोत हा सुंदर असा षटकोन (Hexagon), ज्याला ६ समान बाजू आणि ६ कोपरे असतात. हा सिरीजचा दुसरा भाग आहे.
@@ -190,14 +190,15 @@ export const KNITTING_DOCUMENTS: KnowledgeDocument[] = [
   {
     id: "part-1",
     videoOrder: 1,
-    title: "Part 1: Beginner Crochet Basics — Chain, Single, Half Double & Double Crochet",
-    marathiTitle: "भाग १: नवशिक्यांसाठी क्रोशे बेसिक — चेन, सिंगल, हाफ डबल आणि डबल क्रोशे",
+    title: "Part 1: Crochet Basics (क्रोशे बेसिक)",
+    marathiTitle: "भाग १: क्रोशे बेसिक",
     sourceFile: "part1.txt",
     content: PART1_TEXT,
     summary:
-      "Comprehensive beginner crochet lesson: holding Ganga Olivia acrylic yarn, using a 4.5mm hook, creating the starter loop, and mastering Chain Stitch, Single Crochet, Half Double Crochet, and Double Crochet (7 steps).",
+      "A beginner foundation tutorial introducing essential crochet tools, yarn handling techniques, and core stitches. In this lesson, you will learn: holding the yarn and 4.5mm hook, making the starter loop, Chain Stitch, Single Crochet, Half Double Crochet, the 7-step Double Crochet sequence, and beginner practice pacing.",
     keyTopics: [
-      "suchita crochet",
+      "crochet basics",
+      "क्रोशे बेसिक",
       "ganga olivia yarn",
       "acrylic yarn",
       "4.5 mm crochet hook",
@@ -231,14 +232,14 @@ export const KNITTING_DOCUMENTS: KnowledgeDocument[] = [
   {
     id: "part-2",
     videoOrder: 2,
-    title: "Part 2: Cute Little Crochet Heart Shape (छोटूसा क्यूट हार्ट)",
+    title: "Part 2: Crochet Heart Shape (छोटूसा क्यूट हार्ट)",
     marathiTitle: "भाग २: क्रोशेने छोटूसा क्यूट हार्ट शेप कसा बनवायचा",
     sourceFile: "part2.txt",
     content: PART2_TEXT,
     summary:
-      "Episode 4 of shapes series: crocheting a cute heart using Ganga Olivia yarn and a 4mm hook with magic ring, 3 chains, 3 treble crochets, 3 double crochets, bottom point, symmetry, and closing the magic circle.",
+      "A step-by-step tutorial on crocheting a decorative heart motif using an adjustable ring. In this lesson, you will learn: creating an adjustable magic ring, working treble crochets for curved lobes, double crochet transitions, shaping the sharp bottom point, mirroring the symmetrical half, closing the center ring, and tapestry needle finishing.",
     keyTopics: [
-      "crochet heart",
+      "crochet heart shape",
       "हार्ट शेप",
       "छोटूसा क्यूट हार्ट",
       "magic ring",
@@ -271,14 +272,14 @@ export const KNITTING_DOCUMENTS: KnowledgeDocument[] = [
   {
     id: "part-3",
     videoOrder: 3,
-    title: "Part 3: Crochet Pentagon Shape — 5 Sides & 5 Corners (पंचकोन)",
+    title: "Part 3: Crochet Pentagon Shape (पंचकोन)",
     marathiTitle: "भाग ३: क्रोशेने पंचकोन कसा बनवायचा — ५ बाजू आणि ५ कोपरे",
     sourceFile: "part3.txt",
     content: PART3_TEXT,
     summary:
-      "Episode 3 of shapes series: crocheting a 5-sided pentagon over 3 rounds with magic ring, groups of 3 DC and 2 chains, [1 DC, 2 ch, 1 DC] corner expansion, and the crucial rule of not skipping the final DC.",
+      "A geometric tutorial on constructing a balanced 5-sided pentagon across three structured rounds. In this lesson, you will learn: starting Round 1 with five groups of [3 DC, 2 Ch], applying the [1 DC, 2 Ch, 1 DC] corner expansion in Round 2, expanding outer stitches in Round 3, the crucial rule of not skipping the final DC, and invisible tail weaving.",
     keyTopics: [
-      "pentagon",
+      "crochet pentagon shape",
       "पंचकोन",
       "5 sides",
       "५ बाजू",
@@ -308,14 +309,14 @@ export const KNITTING_DOCUMENTS: KnowledgeDocument[] = [
   {
     id: "part-4",
     videoOrder: 4,
-    title: "Part 4: Crochet Hexagon Shape — 6 Sides & 6 Corners (षटकोन)",
+    title: "Part 4: Crochet Hexagon Shape (षटकोन)",
     marathiTitle: "भाग ४: क्रोशेने षटकोन कसा बनवायचा — ६ बाजू आणि ६ कोपरे",
     sourceFile: "part4.txt",
     content: PART4_TEXT,
     summary:
-      "Episode 2 of shapes series: crocheting a 6-sided hexagon over 3 rounds with magic ring, 6 groups of 3 DC and 2 chains, [1 DC, 2 ch, 1 DC] corner expansion, and preserving the increased DC before slip stitching.",
+      "A geometric lesson on crafting a symmetrical 6-sided hexagon motif with crisp corners and balanced edges. In this lesson, you will learn: building the six-corner foundation in Round 1, expanding corners with [1 DC, 2 Ch, 1 DC] in Round 2, Round 3 perimeter expansion, the crucial rule of working the increased DC before the closing slip stitch, and dual-thread finishing.",
     keyTopics: [
-      "hexagon",
+      "crochet hexagon shape",
       "षटकोन",
       "6 sides",
       "६ बाजू",
@@ -329,10 +330,14 @@ export const KNITTING_DOCUMENTS: KnowledgeDocument[] = [
       "1 dc 2 ch 1 dc",
       "round 3 hexagon",
       "crucial rule",
+      "increased dc",
+      "वाढलेला डबल क्रोशे",
+      "sharp corners",
+      "dual thread finish",
+      "tapestry needle finish",
       "increased dc after 6th corner",
       "वाढलेला डबल क्रोशे विणणे",
       "symmetrical hexagon",
-      "tapestry needle finishing",
     ],
     starterQuestions: [
       "How do I start Round 1 of the hexagon to create 6 distinct corners?",

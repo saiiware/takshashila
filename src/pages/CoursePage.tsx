@@ -54,7 +54,7 @@ export default function CoursePage() {
           </h1>
 
           <p className="text-base md:text-lg text-white/90 leading-relaxed mb-6">
-            Master the art of crochet with Suchita: learn foundation stitches (Chain, Single, Half Double, Double Crochet) and create stunning geometric shapes including Hearts, Pentagons, and Hexagons.
+            Master the art of crochet: learn foundation stitches (Chain, Single, Half Double, Double Crochet) and create stunning geometric shapes including Hearts, Pentagons, and Hexagons.
           </p>
 
           <div className="flex flex-wrap items-center gap-4 text-xs md:text-sm text-white/80">
@@ -133,7 +133,7 @@ export default function CoursePage() {
         <div>
           <h2 className="text-2xl font-extrabold text-ink">Course Curriculum</h2>
           <p className="text-sm text-ink/60 mt-1">
-            Follow Suchita's 4-part sequential masterclass from foundation stitches to advanced geometric shapes.
+            Follow the 4-part sequential course from foundation stitches to advanced geometric shapes.
           </p>
         </div>
 

@@ -105,12 +105,12 @@ function fallbackClientVisionAnalysis(fileName: string, prompt: string): VisionA
         "Excellent craftwork! The crochet heart has well-defined symmetrical lobes (3 treble crochets + 3 double crochets on each side) and a crisp bottom point formed by the central treble crochet.",
       solution:
         "Part 2 finishing: Ensure the magic ring tail is pulled tightly so no center gap remains, and weave the yarn tail securely into the stitches on the back side using a tapestry needle.",
-      lesson_reference: "Part 2: Cute Little Crochet Heart Shape",
+      lesson_reference: "Part 2: Crochet Heart Shape (छोटूसा क्यूट हार्ट)",
       confidence: 0.95,
       sources: [
         {
           videoId: "part-2",
-          videoTitle: "Part 2: Cute Little Crochet Heart Shape (छोटूसा क्यूट हार्ट)",
+          videoTitle: "Part 2: Crochet Heart Shape (छोटूसा क्यूट हार्ट)",
           snippet: "Work 3 chains, 3 treble crochets, 3 double crochets, chain 1, 1 treble crochet for bottom point, 3 double crochets, 3 treble crochets, chain 3, and slip stitch into magic ring.",
           score: 0.97,
         },
@@ -130,12 +130,12 @@ function fallbackClientVisionAnalysis(fileName: string, prompt: string): VisionA
         "Great geometric symmetry! The pentagon clearly shows 5 equal sides and 5 well-defined corner angles formed by the [1 DC, 2 ch, 1 DC] corner expansion.",
       solution:
         "Part 3 rule: Always remember to work the increased double crochet after the 5th corner in Round 3 before making your final slip stitch, ensuring clean symmetry.",
-      lesson_reference: "Part 3: Crochet Pentagon Shape — 5 Sides & 5 Corners",
+      lesson_reference: "Part 3: Crochet Pentagon Shape (पंचकोन)",
       confidence: 0.94,
       sources: [
         {
           videoId: "part-3",
-          videoTitle: "Part 3: Crochet Pentagon Shape — 5 Sides & 5 Corners (पंचकोन)",
+          videoTitle: "Part 3: Crochet Pentagon Shape (पंचकोन)",
           snippet: "Work 5 groups of [3 DC, Chain 2] in Round 1, expand corners with [1 DC, 2 ch, 1 DC] in Round 2 and 3, and do not skip the final increased DC.",
           score: 0.96,
         },
@@ -155,12 +155,12 @@ function fallbackClientVisionAnalysis(fileName: string, prompt: string): VisionA
         "Outstanding shape accuracy! The hexagon exhibits 6 sharp corners and balanced sides without flaring or curling.",
       solution:
         "Part 4 rule: Complete Round 3 by working the increased double crochet after the 6th corner before joining into the 3rd chain with a slip stitch.",
-      lesson_reference: "Part 4: Crochet Hexagon Shape — 6 Sides & 6 Corners",
+      lesson_reference: "Part 4: Crochet Hexagon Shape (षटकोन)",
       confidence: 0.95,
       sources: [
         {
           videoId: "part-4",
-          videoTitle: "Part 4: Crochet Hexagon Shape — 6 Sides & 6 Corners (षटकोन)",
+          videoTitle: "Part 4: Crochet Hexagon Shape (षटकोन)",
           snippet: "Round 1 creates 6 groups of [3 DC, Chain 2]. Expand corners with [1 DC, 2 ch, 1 DC] and weave in both yarn ends invisibly with a tapestry needle.",
           score: 0.97,
         },
@@ -177,7 +177,7 @@ function fallbackClientVisionAnalysis(fileName: string, prompt: string): VisionA
       score: 9.2,
       detected_items: ["Ganga Olivia acrylic yarn ball", "Crochet hook (4mm / 4.5mm)", "Smooth strand texture"],
       feedback:
-        "Recommended materials identified! Suchita recommends Ganga Olivia acrylic yarn for beginners because acrylic yarn doesn't split easily and makes stitches clearly visible.",
+        "Recommended materials identified! Ganga Olivia acrylic yarn is recommended for beginners because acrylic yarn doesn't split easily and makes stitches clearly visible.",
       solution:
         "For Part 1 beginner chain and stitches, use a 4.5 mm hook. For Parts 2-4 (Heart, Pentagon, Hexagon shapes), use a 4.0 mm hook.",
       lesson_reference: "Part 1 & Parts 2-4 Materials",
@@ -185,7 +185,7 @@ function fallbackClientVisionAnalysis(fileName: string, prompt: string): VisionA
       sources: [
         {
           videoId: "part-1",
-          videoTitle: "Part 1: Beginner Crochet Basics — Chain, Single, Half Double & Double Crochet",
+          videoTitle: "Part 1: Crochet Basics (क्रोशे बेसिक)",
           snippet: "Beginners should use Ganga Olivia acrylic yarn and a 4.5mm hook for initial stitches, or a 4mm hook for shapes.",
           score: 0.95,
         },
@@ -209,7 +209,7 @@ function fallbackClientVisionAnalysis(fileName: string, prompt: string): VisionA
     sources: [
       {
         videoId: "part-1",
-        videoTitle: "Part 1: Beginner Crochet Basics",
+        videoTitle: "Part 1: Crochet Basics (क्रोशे बेसिक)",
         snippet: "Practice chains and stitches slowly with steady tension for even, beautiful crochet fabric.",
         score: 0.92,
       },

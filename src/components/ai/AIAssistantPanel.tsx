@@ -102,7 +102,7 @@ export default function AIAssistantPanel({
               ? [
                   "How do I make the 6 corners in Round 1 of the hexagon?",
                   "How do I work the increased DC after the 6th corner?",
-                  "What hook size does Suchita recommend for the hexagon?",
+                  "What hook size is recommended for the hexagon?",
                 ]
               : [
                   "How do I do a double crochet using the 7 steps?",
@@ -166,41 +166,35 @@ export default function AIAssistantPanel({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="border-b border-line pb-3">
+      {/* Header: Clean & professional as in wireframe */}
+      <div className="border-b border-workshop-200/80 pb-3">
         <div className="flex items-center justify-between">
-          <p className="text-lg font-bold text-ink">{heading}</p>
+          <h2 className="text-lg sm:text-xl font-extrabold text-ink tracking-tight">{heading}</h2>
         </div>
-        <p className="text-sm text-ink/60 mt-0.5">
-          {videoTitle
-            ? `Grounded in "${videoTitle}" & video transcripts`
-            : "Grounded in Crochet Lessons (Parts 1 - 4)"}
+        <p className="text-xs sm:text-sm text-ink/60 mt-0.5">
+          Ask questions about this lesson.
         </p>
       </div>
 
       <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto py-3">
         {messages.length === 0 && (
-          <div className="space-y-3 rounded-card bg-workshop-50/70 p-4 border border-workshop-200">
-            <p className="text-sm text-ink/80 leading-relaxed">
-              <strong>Ask questions by typing, speaking (🎙️ English / मराठी), or uploading a photo!</strong> Use the microphone to ask voice questions in English or Marathi, or use camera upload to inspect your <strong>crochet stitches</strong>, <strong>heart</strong>, <strong>pentagon</strong>, or <strong>hexagon</strong>.
+          <div className="space-y-3 py-2 animate-fade-in">
+            <p className="text-xs font-bold uppercase tracking-wider text-workshop-700">
+              Suggested questions
             </p>
-
-            <div className="pt-1">
-              <p className="text-xs font-semibold text-workshop-700 uppercase tracking-wider mb-2">
-                Suggested questions for {videoTitle ? "this lesson" : "beginners"}:
-              </p>
-              <div className="flex flex-col gap-1.5">
-                {starterQuestions.map((q, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => handleSendMessage(q)}
-                    disabled={isSending}
-                    className="text-left rounded-lg bg-white border border-workshop-200 hover:border-workshop-400 hover:bg-workshop-100/50 px-3 py-2 text-xs font-medium text-ink/80 transition-all shadow-2xs hover:shadow-xs disabled:opacity-50"
-                  >
-                    {q}
-                  </button>
-                ))}
-              </div>
+            <div className="flex flex-col gap-2">
+              {starterQuestions.map((q, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => handleSendMessage(q)}
+                  disabled={isSending}
+                  className="w-full text-left rounded-xl bg-workshop-50/80 hover:bg-workshop-100/80 border border-workshop-200 hover:border-workshop-400 px-3.5 py-2.5 text-xs sm:text-sm font-medium text-ink/80 transition-all shadow-2xs hover:shadow-xs disabled:opacity-50 flex items-center justify-between group cursor-pointer"
+                >
+                  <span className="truncate pr-2">{q}</span>
+                  <span className="text-workshop-500 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all text-xs shrink-0">→</span>
+                </button>
+              ))}
             </div>
           </div>
         )}
@@ -221,7 +215,7 @@ export default function AIAssistantPanel({
         )}
       </div>
 
-      <div className="pt-2">
+      <div className="pt-2 border-t border-workshop-100">
         <ChatInput
           onSend={handleSendMessage}
           onMicPress={handleMicPress}

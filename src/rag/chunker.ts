@@ -94,23 +94,23 @@ export function buildKnowledgeIndex(): KnowledgeChunk[] {
     content: string;
   }> = [
     // =========================================================================
-    // PART 1: BEGINNER CROCHET BASICS (Suchita - part1.txt)
+    // PART 1: CROCHET BASICS (क्रोशे बेसिक) (part1.txt)
     // =========================================================================
     {
       id: "p1-c1-intro-materials",
       docId: "part-1",
       videoOrder: 1,
-      videoTitle: "Part 1: Beginner Crochet Basics — Chain, Single, Half Double & Double Crochet",
+      videoTitle: "Part 1: Crochet Basics (क्रोशे बेसिक)",
       sourceFile: "part1.txt",
-      title: "Introduction by Suchita & Beginner Materials (Ganga Olivia Yarn, 4.5mm Hook)",
+      title: "Introduction & Beginner Materials (Ganga Olivia Yarn, 4.5mm Hook)",
       content:
-        "In Part 1, instructor Suchita (crochet artist and dentist) introduces crochet as a trending, aesthetic craft. For beginners, she specifically recommends using an acrylic yarn ball from Ganga company called 'Ganga Olivia'. Beginners should start with acrylic yarn and use the hook size recommended on the yarn label, which is a 4.5 mm crochet hook. Very fine or thin hooks make learning difficult, so a 4.5mm hook is ideal. You also need a pair of scissors to cut yarn.",
+        "In Part 1, crochet is introduced as a trending, aesthetic craft. For beginners, it is specifically recommended to use an acrylic yarn ball from Ganga company called 'Ganga Olivia'. Beginners should start with acrylic yarn and use the hook size recommended on the yarn label, which is a 4.5 mm crochet hook. Very fine or thin hooks make learning difficult, so a 4.5mm hook is ideal. You also need a pair of scissors to cut yarn.",
     },
     {
       id: "p1-c2-holding-yarn-loop",
       docId: "part-1",
       videoOrder: 1,
-      videoTitle: "Part 1: Beginner Crochet Basics — Chain, Single, Half Double & Double Crochet",
+      videoTitle: "Part 1: Crochet Basics (क्रोशे बेसिक)",
       sourceFile: "part1.txt",
       title: "Holding Yarn in Left Hand and Making the Starter Loop",
       content:
@@ -120,7 +120,7 @@ export function buildKnowledgeIndex(): KnowledgeChunk[] {
       id: "p1-c3-chain-stitch",
       docId: "part-1",
       videoOrder: 1,
-      videoTitle: "Part 1: Beginner Crochet Basics — Chain, Single, Half Double & Double Crochet",
+      videoTitle: "Part 1: Crochet Basics (क्रोशे बेसिक)",
       sourceFile: "part1.txt",
       title: "How to Make a Chain Stitch (चेन स्टिच)",
       content:
@@ -130,7 +130,7 @@ export function buildKnowledgeIndex(): KnowledgeChunk[] {
       id: "p1-c4-single-crochet",
       docId: "part-1",
       videoOrder: 1,
-      videoTitle: "Part 1: Beginner Crochet Basics — Chain, Single, Half Double & Double Crochet",
+      videoTitle: "Part 1: Crochet Basics (क्रोशे बेसिक)",
       sourceFile: "part1.txt",
       title: "How to Make a Single Crochet Stitch (सिंगल क्रोशे - SC)",
       content:
@@ -140,7 +140,7 @@ export function buildKnowledgeIndex(): KnowledgeChunk[] {
       id: "p1-c5-half-double-crochet",
       docId: "part-1",
       videoOrder: 1,
-      videoTitle: "Part 1: Beginner Crochet Basics — Chain, Single, Half Double & Double Crochet",
+      videoTitle: "Part 1: Crochet Basics (क्रोशे बेसिक)",
       sourceFile: "part1.txt",
       title: "How to Make a Half Double Crochet Stitch (हाफ डबल क्रोशे - HDC)",
       content:
@@ -150,7 +150,7 @@ export function buildKnowledgeIndex(): KnowledgeChunk[] {
       id: "p1-c6-double-crochet",
       docId: "part-1",
       videoOrder: 1,
-      videoTitle: "Part 1: Beginner Crochet Basics — Chain, Single, Half Double & Double Crochet",
+      videoTitle: "Part 1: Crochet Basics (क्रोशे बेसिक)",
       sourceFile: "part1.txt",
       title: "How to Make a Double Crochet Stitch (डबल क्रोशे - DC) — 7 Steps",
       content:
@@ -160,31 +160,31 @@ export function buildKnowledgeIndex(): KnowledgeChunk[] {
       id: "p1-c7-practice-tips",
       docId: "part-1",
       videoOrder: 1,
-      videoTitle: "Part 1: Beginner Crochet Basics — Chain, Single, Half Double & Double Crochet",
+      videoTitle: "Part 1: Crochet Basics (क्रोशे बेसिक)",
       sourceFile: "part1.txt",
       title: "Crochet Practice Routine & Learning Tips",
       content:
-        "Suchita's advice for beginners: Practice making chains for an entire day until your tension is consistent. On the second day, practice single crochets. Slow down the video playback speed and crochet along with the video step by step. Memorizing the numbered step counts (1 to 5 for HDC, 1 to 7 for DC) makes mastering the stitches quick and enjoyable.",
+        "Practice advice for beginners: Practice making chains for an entire day until your tension is consistent. On the second day, practice single crochets. Slow down the video playback speed and crochet along with the video step by step. Memorizing the numbered step counts (1 to 5 for HDC, 1 to 7 for DC) makes mastering the stitches quick and enjoyable.",
     },
 
     // =========================================================================
-    // PART 2: CUTE LITTLE CROCHET HEART SHAPE (Suchita - part2.txt)
+    // PART 2: CROCHET HEART SHAPE (छोटूसा क्यूट हार्ट) (part2.txt)
     // =========================================================================
     {
       id: "p2-c1-heart-materials",
       docId: "part-2",
       videoOrder: 2,
-      videoTitle: "Part 2: Cute Little Crochet Heart Shape (छोटूसा क्यूट हार्ट)",
+      videoTitle: "Part 2: Crochet Heart Shape (छोटूसा क्यूट हार्ट)",
       sourceFile: "part2.txt",
       title: "Materials for Crocheting the Heart Shape (Episode 4)",
       content:
-        "In Part 2 (Episode 4 of the shapes series), Suchita teaches how to make a cute little crochet heart (छोटूसा क्यूट हार्ट). Required materials: Ganga Olivia acrylic yarn, a 4 mm crochet hook, a tapestry needle (टेपेस्ट्री नीडल) for weaving in yarn tails, and scissors. Earlier episodes in the series covered circles, squares, hexagons, and pentagons.",
+        "In Part 2, the lesson demonstrates how to make a cute little crochet heart (छोटूसा क्यूट हार्ट). Required materials: Ganga Olivia acrylic yarn, a 4 mm crochet hook, a tapestry needle (टेपेस्ट्री नीडल) for weaving in yarn tails, and scissors. Earlier episodes in the series covered circles, squares, hexagons, and pentagons.",
     },
     {
       id: "p2-c2-magic-ring",
       docId: "part-2",
       videoOrder: 2,
-      videoTitle: "Part 2: Cute Little Crochet Heart Shape (छोटूसा क्यूट हार्ट)",
+      videoTitle: "Part 2: Crochet Heart Shape (छोटूसा क्यूट हार्ट)",
       sourceFile: "part2.txt",
       title: "How to Make a Magic Ring / Magic Circle (मॅजिक रिंग)",
       content:
@@ -194,7 +194,7 @@ export function buildKnowledgeIndex(): KnowledgeChunk[] {
       id: "p2-c3-chain3-treble",
       docId: "part-2",
       videoOrder: 2,
-      videoTitle: "Part 2: Cute Little Crochet Heart Shape (छोटूसा क्यूट हार्ट)",
+      videoTitle: "Part 2: Crochet Heart Shape (छोटूसा क्यूट हार्ट)",
       sourceFile: "part2.txt",
       title: "Chain 3 and 3 Treble Crochets for the Heart Lobe",
       content:
@@ -204,7 +204,7 @@ export function buildKnowledgeIndex(): KnowledgeChunk[] {
       id: "p2-c4-dc-bottom-point",
       docId: "part-2",
       videoOrder: 2,
-      videoTitle: "Part 2: Cute Little Crochet Heart Shape (छोटूसा क्यूट हार्ट)",
+      videoTitle: "Part 2: Crochet Heart Shape (छोटूसा क्यूट हार्ट)",
       sourceFile: "part2.txt",
       title: "3 Double Crochets and the Bottom Point of the Heart",
       content:
@@ -214,7 +214,7 @@ export function buildKnowledgeIndex(): KnowledgeChunk[] {
       id: "p2-c5-second-half-finish",
       docId: "part-2",
       videoOrder: 2,
-      videoTitle: "Part 2: Cute Little Crochet Heart Shape (छोटूसा क्यूट हार्ट)",
+      videoTitle: "Part 2: Crochet Heart Shape (छोटूसा क्यूट हार्ट)",
       sourceFile: "part2.txt",
       title: "Second Symmetrical Half and Closing the Magic Ring",
       content:
@@ -222,23 +222,23 @@ export function buildKnowledgeIndex(): KnowledgeChunk[] {
     },
 
     // =========================================================================
-    // PART 3: CROCHET PENTAGON SHAPE (Suchita - part3.txt)
+    // PART 3: CROCHET PENTAGON SHAPE (पंचकोन) (part3.txt)
     // =========================================================================
     {
       id: "p3-c1-pentagon-intro",
       docId: "part-3",
       videoOrder: 3,
-      videoTitle: "Part 3: Crochet Pentagon Shape — 5 Sides & 5 Corners (पंचकोन)",
+      videoTitle: "Part 3: Crochet Pentagon Shape (पंचकोन)",
       sourceFile: "part3.txt",
       title: "Pentagon Characteristics & Tools (Episode 3)",
       content:
-        "In Part 3 (Episode 3 of the shapes series), Suchita teaches how to crochet a 5-sided pentagon (पंचकोन), which has 5 equal sides (५ बाजू) and 5 corners (५ कॉर्नर्स). Materials: Ganga Olivia yarn, 4 mm crochet hook, tapestry needle, and scissors. The pentagon is worked in 3 distinct rounds starting from a magic ring.",
+        "In Part 3, the lesson demonstrates how to crochet a 5-sided pentagon (पंचकोन), which has 5 equal sides (५ बाजू) and 5 corners (५ कॉर्नर्स). Materials: Ganga Olivia yarn, 4 mm crochet hook, tapestry needle, and scissors. The pentagon is worked in 3 distinct rounds starting from a magic ring.",
     },
     {
       id: "p3-c2-round1",
       docId: "part-3",
       videoOrder: 3,
-      videoTitle: "Part 3: Crochet Pentagon Shape — 5 Sides & 5 Corners (पंचकोन)",
+      videoTitle: "Part 3: Crochet Pentagon Shape (पंचकोन)",
       sourceFile: "part3.txt",
       title: "Round 1 of Pentagon: Magic Ring & 5 Groups of [3 DC, Chain 2]",
       content:
@@ -248,7 +248,7 @@ export function buildKnowledgeIndex(): KnowledgeChunk[] {
       id: "p3-c3-round2",
       docId: "part-3",
       videoOrder: 3,
-      videoTitle: "Part 3: Crochet Pentagon Shape — 5 Sides & 5 Corners (पंचकोन)",
+      videoTitle: "Part 3: Crochet Pentagon Shape (पंचकोन)",
       sourceFile: "part3.txt",
       title: "Round 2 of Pentagon: Corner Expansion [1 DC, 2 Chain, 1 DC]",
       content:
@@ -258,7 +258,7 @@ export function buildKnowledgeIndex(): KnowledgeChunk[] {
       id: "p3-c4-round3-crucial-step",
       docId: "part-3",
       videoOrder: 3,
-      videoTitle: "Part 3: Crochet Pentagon Shape — 5 Sides & 5 Corners (पंचकोन)",
+      videoTitle: "Part 3: Crochet Pentagon Shape (पंचकोन)",
       sourceFile: "part3.txt",
       title: "Round 3 of Pentagon & Crucial Rule: Do NOT Skip the Final DC",
       content:
@@ -268,7 +268,7 @@ export function buildKnowledgeIndex(): KnowledgeChunk[] {
       id: "p3-c5-finishing",
       docId: "part-3",
       videoOrder: 3,
-      videoTitle: "Part 3: Crochet Pentagon Shape — 5 Sides & 5 Corners (पंचकोन)",
+      videoTitle: "Part 3: Crochet Pentagon Shape (पंचकोन)",
       sourceFile: "part3.txt",
       title: "Invisible Finishing for Pentagon with Tapestry Needle",
       content:
@@ -276,23 +276,23 @@ export function buildKnowledgeIndex(): KnowledgeChunk[] {
     },
 
     // =========================================================================
-    // PART 4: CROCHET HEXAGON SHAPE (Suchita - part4.txt)
+    // PART 4: CROCHET HEXAGON SHAPE (षटकोन) (part4.txt)
     // =========================================================================
     {
       id: "p4-c1-hexagon-intro",
       docId: "part-4",
       videoOrder: 4,
-      videoTitle: "Part 4: Crochet Hexagon Shape — 6 Sides & 6 Corners (षटकोन)",
+      videoTitle: "Part 4: Crochet Hexagon Shape (षटकोन)",
       sourceFile: "part4.txt",
       title: "Hexagon Characteristics & Tools (Episode 2)",
       content:
-        "In Part 4 (Episode 2 of the shapes series), Suchita teaches how to crochet a 6-sided hexagon (षटकोन), which has 6 equal sides and 6 sharp corners. Materials: Ganga Olivia acrylic yarn, 4 mm crochet hook, tapestry needle, and scissors. It is worked across 3 rounds starting from a magic ring.",
+        "In Part 4, the lesson demonstrates how to crochet a 6-sided hexagon (षटकोन), which has 6 equal sides and 6 sharp corners. Materials: Ganga Olivia acrylic yarn, 4 mm crochet hook, tapestry needle, and scissors. It is worked across 3 rounds starting from a magic ring.",
     },
     {
       id: "p4-c2-round1",
       docId: "part-4",
       videoOrder: 4,
-      videoTitle: "Part 4: Crochet Hexagon Shape — 6 Sides & 6 Corners (षटकोन)",
+      videoTitle: "Part 4: Crochet Hexagon Shape (षटकोन)",
       sourceFile: "part4.txt",
       title: "Round 1 of Hexagon: Magic Ring & 6 Groups of [3 DC, Chain 2]",
       content:
@@ -302,7 +302,7 @@ export function buildKnowledgeIndex(): KnowledgeChunk[] {
       id: "p4-c3-round2",
       docId: "part-4",
       videoOrder: 4,
-      videoTitle: "Part 4: Crochet Hexagon Shape — 6 Sides & 6 Corners (षटकोन)",
+      videoTitle: "Part 4: Crochet Hexagon Shape (षटकोन)",
       sourceFile: "part4.txt",
       title: "Round 2 of Hexagon: Expanding 6 Corners with [1 DC, 2 Chain, 1 DC]",
       content:
@@ -312,7 +312,7 @@ export function buildKnowledgeIndex(): KnowledgeChunk[] {
       id: "p4-c4-round3-crucial-step",
       docId: "part-4",
       videoOrder: 4,
-      videoTitle: "Part 4: Crochet Hexagon Shape — 6 Sides & 6 Corners (षटकोन)",
+      videoTitle: "Part 4: Crochet Hexagon Shape (षटकोन)",
       sourceFile: "part4.txt",
       title: "Round 3 of Hexagon & Crucial Rule: Working the Increased DC",
       content:
@@ -322,7 +322,7 @@ export function buildKnowledgeIndex(): KnowledgeChunk[] {
       id: "p4-c5-finishing",
       docId: "part-4",
       videoOrder: 4,
-      videoTitle: "Part 4: Crochet Hexagon Shape — 6 Sides & 6 Corners (षटकोन)",
+      videoTitle: "Part 4: Crochet Hexagon Shape (षटकोन)",
       sourceFile: "part4.txt",
       title: "Fastening Off and Clean Tapestry Finishing for Hexagon",
       content:

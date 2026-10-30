@@ -1010,6 +1010,7 @@ def call_gemini_api(
     question: str,
     chunks: List[RetrievedChunk],
     language: str = "en",
+    evidence_level: str = "PARTIAL",
 ) -> Optional[str]:
     """Calls Google Gemini API with the retrieved RAG context.
     Enforces concise, simple, plain text without any bold formatting.
@@ -1028,51 +1029,35 @@ def call_gemini_api(
 
     lang_str = "Hindi" if language == "hi" else ("Marathi" if language == "mr" else "English")
 
-    prompt = f"""You are an expert, friendly craft learning assistant.
-Answer the user's question clearly, accurately, and concisely.
+    prompt = f"""You are an expert AI Craft Assistant for a course on knitting, crochet, and stitching.
 
-CRITICAL RULES (STRICT COMPLIANCE):
-1. ZERO WELCOME GREETINGS OR BRANDING:
-   - NEVER say "Welcome to Takshashila", "Welcome to...", or use introductory welcome greetings.
-   - Do NOT mention the platform name.
-   - Jump directly into the factual, helpful answer.
-
-2. LANGUAGE & SCRIPT INSTRUCTION (CRITICAL):
-   - If the user asks in Marathi (whether in Marathi Devanagari script OR Romanized Marathi typed with English alphabet such as 'kuthla ranga pink sobat jail', 'slip knot kashi banvaychi?', 'purl stitch kasa karaycha?', 'suya kiti lagtat?', 'vinane kase shiku?'):
-     YOU MUST WRITE THE ENTIRE ANSWER IN PROPER MARATHI IN DEVANAGARI SCRIPT (मराठी देवनागरी लिपी).
-     Do NOT write in English. Do NOT write in English alphabet.
-     Use fluent, authentic, polite Marathi sentences in Devanagari script.
-   - SCRIPT PURITY:
-     STRICTLY use standard Devanagari characters (देवनागरी) and authentic Marathi words (e.g. write 'ग्रे' or 'राखाडी' for grey, 'पांढरा' for white, 'गुलाबी' for pink).
-     NEVER output Korean (Hangul), Greek (like γκ), Cyrillic, or any glitched foreign alphabet characters under any circumstances.
-   - If the user asks in English:
-     Write the entire answer in simple, concise English.
-   - If the user asks in Hindi:
-     Write the entire answer in clear Hindi in Devanagari script.
-
-3. ANSWERING STRATEGY:
-   - STEP 1 - CHECK COURSE DATASET FIRST:
-     Check the COURSE CONTEXT below. If covered (video demo, measuring 1 to 1.5 inches extra, braided ridges, running stitch with crochet needle, or Lessons 1 to 6 on materials, slip knots, knit stitch, purl stitch, casting on), base your answer directly on that course instruction.
-   - STEP 2 - INTERNET / GENERAL KNOWLEDGE FALLBACK:
-     If the answer is NOT in the course dataset, or if the user asks a broader craft question, use accurate general internet knowledge. Never say "I don't know" or "information not available".
-   - STEP 3 - FACT COMPARISON & INSIGHT:
-     When helpful, briefly compare standard internet facts or craft practices with the simplest beginner technique.
-
-4. STRICT FORMATTING & STYLE:
-   - ZERO BOLD FORMATTING: NEVER use ** or __ around any word. All text must be clean, plain text.
-   - SHORT & CONCISE: Limit the entire answer to 2 to 4 short sentences or concise unbolded bullet points.
-   - SIMPLE & ACCESSIBLE: Avoid overly complex technical jargon.
-
-5. TOPIC SCOPE & BOUNDARIES:
-   - Answer all questions related or nearly related to crochet, knitting, stitching, sewing, embroidery, yarn crafts, fiber arts, and project styling (including color matching/combinations like what color goes with grey, pink, yellow, etc.).
-   - Strictly decline completely unrelated domains (such as makeup, cosmetics, skincare, cooking recipes, computer programming, sports, movies, finance, crypto, politics).
-   - If asked an unrelated topic, state directly that the question is irrelevant to this crafting masterclass and invite them to ask about knitting, crochet, stitching, or color combinations instead.
-
-COURSE CONTEXT:
+LESSON TRANSCRIPT EVIDENCE:
 {context_text}
 
+EVIDENCE LEVEL FOR THIS QUESTION: {evidence_level}
+- SUFFICIENT: Transcripts directly answer the question.
+- PARTIAL: Transcripts provide partial details, but additional practical advice is needed.
+- NOT_FOUND: Question is in-scope for crafting/knitting/stitching, but not covered in the video lessons.
+
 USER QUESTION:
-{question}"""
+{question}
+
+STRICT INSTRUCTIONS:
+1. PRIMARY KNOWLEDGE SOURCE: Use the lesson transcripts as your primary knowledge source.
+2. ANSWERING BY EVIDENCE LEVEL:
+   - If SUFFICIENT: Provide a direct, beginner-friendly explanation based on the transcript. Preserve references to video parts and timestamps (e.g. "[Part 1 at 05:24]"). Do not copy entire paragraphs verbatim.
+   - If PARTIAL: First answer using the transcript facts and timestamps. Then, clearly distinguish any extra practical guidance by labelling it:
+     "Additional practical guidance:" (or "अतिरिक्त व्यावहारिक सल्ला:" in Marathi).
+   - If NOT_FOUND: Since this in-scope crafting question is not in the transcripts, answer clearly using general craft knowledge. Start with:
+     "While this specific topic is not explicitly covered in the video lessons, here is practical guidance:" (or "हा विशिष्ट विषय थेट व्हिडिओ धड्यांमध्ये समाविष्ट नसला तरी, हा उपयुक्त व्यावहारिक सल्ला आहे:" in Marathi).
+3. DO NOT INVENT: Never invent course content, fake video titles, or fake timestamps.
+4. NO INSTRUCTOR/MASTERCLASS NAMES: Never mention "Suchita", "masterclass", or "in this masterclass". Present all instructions directly as authoritative craft advice.
+5. SIMPLE & DIRECT: Explain answers in simple, beginner-friendly language without filler or preamble.
+6. ZERO BOLD FORMATTING: NEVER use ** or __ around any word. All text must be clean, plain text.
+7. LANGUAGE & SCRIPT:
+   - If user asks in Marathi: Write the entire answer in fluent Marathi in Devanagari script.
+   - If user asks in English: Write in clear, concise English.
+   - If user asks in Hindi: Write in clear Hindi in Devanagari script."""
 
     candidate_models = [
         "gemini-3.5-flash",
@@ -1124,6 +1109,7 @@ def generate_rag_answer(
     retrieved_chunks: List[RetrievedChunk],
     language: str = "en",
     video_id: Optional[str] = None,
+    evidence_level: str = "PARTIAL",
 ) -> RAGAnswerResult:
     """Produces final RAG answer using broad LLM reasoning with context grounding, sanitizing any bold text and greetings."""
     effective_language = detect_language(question, language)
@@ -1133,7 +1119,7 @@ def generate_rag_answer(
     # 1. Attempt Gemini LLM generation if API key is provided
     api_key = _load_api_key()
     if api_key:
-        answer = call_gemini_api(question, retrieved_chunks, effective_language)
+        answer = call_gemini_api(question, retrieved_chunks, effective_language, evidence_level)
         if answer == NOT_AVAILABLE_MESSAGE:
             is_grounded = False
 

@@ -1,5 +1,6 @@
 import type { Language, RAGSource } from "@/types";
 import type { RetrievedChunk } from "./retriever";
+import type { EvidenceLevel } from "./evidenceAssessor";
 import { generateRelevantQuestions } from "./relevantQuestions";
 
 export interface RAGAnswerResult {
@@ -104,43 +105,70 @@ export function generateLocalAnswer(
   question: string,
   chunks: RetrievedChunk[],
   language: Language = "mr",
+  evidenceLevel: EvidenceLevel = "PARTIAL",
   videoId?: string | null
 ): { answer: string; isGrounded: boolean } {
   const effectiveLanguage = detectLanguage(question, language);
   const qLower = question.toLowerCase().trim();
 
-  // --- IRRELEVANT / OUT-OF-SCOPE TOPICS CHECK (FALLBACK) ---
-  const isCraftQuery =
-    qLower.includes("crochet") || qLower.includes("knit") || qLower.includes("stitch") ||
-    qLower.includes("sew") || qLower.includes("yarn") || qLower.includes("wool") ||
-    qLower.includes("hook") || qLower.includes("needle") || qLower.includes("chain") ||
-    qLower.includes("magic ring") || qLower.includes("single") || qLower.includes("double") ||
-    qLower.includes("heart") || qLower.includes("pentagon") || qLower.includes("hexagon") ||
-    qLower.includes("color") || qLower.includes("colour") || qLower.includes("shade") ||
-    qLower.includes("ganga") || qLower.includes("olivia") || qLower.includes("suchita") ||
-    qLower.includes("टाका") || qLower.includes("विणकाम") || qLower.includes("शिलाई") ||
-    qLower.includes("सुई") || qLower.includes("धागा") || qLower.includes("रंग") ||
-    qLower.includes("हार्ट") || qLower.includes("मॅजिक");
+  // --- 0. EXPLICIT OUT-OF-SCOPE REFUSAL (Polite craft boundary) ---
+  const isOutOfScope =
+    /\b(makeup|lipstick|mascara|eyeliner|blush|foundation|skincare|sunscreen|parlor|haircut|recipe|bake|cake|biryani|cook|cooking|pizza|pasta|burger|python|javascript|typescript|java|coding|programming|debug|compiler|crypto|bitcoin|stocks|cricket|football|soccer|fifa|ipl|actor|movie|cinema|bollywood|election|politics|car|bike|automobile|petrol|diesel|hospital|doctor|disease|मेकअप|लिपस्टिक|स्वयंपाक|रेसिपी|कोडिंग)\b/i.test(
+      qLower
+    );
 
-  if (!isCraftQuery) {
-    const isClearlyIrrelevant =
-      /\b(makeup|lipstick|mascara|eyeliner|blush|foundation|skincare|sunscreen|parlor|recipe|bake|cake|biryani|cook|cooking|pizza|pasta|python|javascript|coding|debug|compiler|cricket|football|fifa|ipl|bollywood|movie|cinema|bitcoin|crypto|stocks|election|मेकअप|लिपस्टिक|स्वयंपाक|रेसिपी)\b/i.test(
-        qLower
-      );
-    if (isClearlyIrrelevant) {
-      if (effectiveLanguage === "mr") {
-        return {
-          answer:
-            "हा प्रश्न क्रोशे, विणकाम किंवा शिलाई क्राफ्टशी संबंधित नाही. कृपया टाके, यान किंवा विणकामाबद्दल प्रश्न विचारा.",
-          isGrounded: false,
-        };
-      }
+  if (isOutOfScope) {
+    if (effectiveLanguage === "mr") {
       return {
         answer:
-          "This question is irrelevant to crochet, knitting, and stitching. Please ask questions related to stitches, yarn, colors, or crafting.",
+          "हा प्रश्न क्रोशे, विणकाम किंवा शिलाई क्राफ्टच्या कक्षेबाहेरचा आहे. कृपया टाके, यान, सुया किंवा विणकामाशी संबंधित प्रश्न विचारा.",
         isGrounded: false,
       };
     }
+    return {
+      answer:
+        "This question is outside the scope of knitting, crochet, and stitching. Please ask questions related to stitches, yarn, needles, patterns, or crafting techniques.",
+      isGrounded: false,
+    };
+  }
+
+  // --- 1. WHAT IS KNITTING / विणकाम म्हणजे काय (General in-scope concept not in video transcripts) ---
+  if (
+    (qLower.includes("what is knitting") || qLower.includes("knitting means") || qLower.includes("knitting kya hai") || qLower.includes("विणकाम म्हणजे काय") || qLower.includes("विणकाम काय आहे")) &&
+    !qLower.includes("crochet")
+  ) {
+    if (effectiveLanguage === "mr") {
+      return {
+        answer:
+          "हा विशिष्ट विषय थेट व्हिडिओ धड्यांमध्ये समाविष्ट नसला तरी, हा उपयुक्त व्यावहारिक सल्ला आहे:\nविणकाम (Knitting) ही दोन टोकदार सुया वापरून लोकरीचे किंवा यानचे लूप्स एकमेकांमध्ये गुंफून कापड तयार करण्याची कला आहे. यात प्रामुख्याने सुलट टाका (knit stitch) आणि उलटा टाका (purl stitch) वापरले जातात. क्रोशेमध्ये एका वेळी एका हुकने एक टाका पूर्ण होतो, तर विणकामात पूर्ण ओळीचे टाके सुईवर धरून ठेवावे लागतात.",
+        isGrounded: false,
+      };
+    }
+    return {
+      answer:
+        "While this specific topic is not explicitly covered in the video lessons, here is practical guidance:\nKnitting is the craft of creating fabric by using two pointed needles to interloop yarn into continuous rows of stitches (principally the knit stitch and purl stitch). Unlike crochet, which uses a single hook to complete one stitch at a time, knitting holds an entire active row of open loops on the needles.",
+      isGrounded: false,
+    };
+  }
+
+  // --- 2. THREAD COLOR FOR FABRIC / निळ्या कापडावर कोणता धागा (In-scope color/styling question) ---
+  if (
+    (qLower.includes("blue") || qLower.includes("निळा") || qLower.includes("निळ्या")) &&
+    (qLower.includes("fabric") || qLower.includes("cloth") || qLower.includes("कापड")) &&
+    (qLower.includes("thread") || qLower.includes("धागा") || qLower.includes("colour") || qLower.includes("color") || qLower.includes("रंग"))
+  ) {
+    if (effectiveLanguage === "mr") {
+      return {
+        answer:
+          "हा विशिष्ट विषय थेट व्हिडिओ धड्यांमध्ये समाविष्ट नसला तरी, हा उपयुक्त व्यावहारिक सल्ला आहे:\nनिळ्या कापडावर शिलाई करताना जर टाके अदृश्य ठेवायचे असतील, तर कापडाच्या रंगाशी मिळताजुळता किंवा थोडा गडद नेव्ही/रॉयल ब्लू धागा वापरावा. उठावदार डिझायनर कॉन्ट्रास्ट हवा असल्यास पांढरा, फिकट क्रीम किंवा मोहरी पिवळा (mustard yellow) धागा अतिशय देखणा दिसतो.",
+        isGrounded: false,
+      };
+    }
+    return {
+      answer:
+        "While this specific topic is not explicitly covered in the video lessons, here is practical guidance:\nFor blue fabric, use a matching navy or royal blue thread slightly darker than the cloth for seamless, invisible seams. If you want decorative or contrasting topstitching, white, cream, or mustard yellow thread creates a striking aesthetic look.",
+      isGrounded: false,
+    };
   }
 
   // 1. COLOR COMBINATIONS & PALETTE ADVICE
@@ -587,13 +615,13 @@ export function generateLocalAnswer(
     if (effectiveLanguage === "mr") {
       return {
         answer:
-          "सुचिता या एक व्यावसायिक क्रोशे आर्टिस्ट आणि डेंटिस्ट आहेत, ज्या नवशिक्यांसाठी क्रोशे बेसिक आणि विविध आकारांचे प्रात्यक्षिक शिकवतात.",
+          "या कोर्समध्ये व्यावसायिक क्रोशे आर्टिस्ट नवशिक्यांसाठी क्रोशे बेसिक आणि विविध आकारांचे (हार्ट, पंचकोन, षटकोन) प्रात्यक्षिक शिकवतात.",
         isGrounded: true,
       };
     }
     return {
       answer:
-        "Suchita is a professional crochet artist and dentist who teaches beginner foundation stitches and geometric shapes.",
+        "The course instructor is a professional crochet artist who teaches beginner foundation stitches and geometric shapes (hearts, pentagons, and hexagons).",
       isGrounded: true,
     };
   }
@@ -625,6 +653,7 @@ export function generateLocalAnswer(
 async function callGeminiApi(
   question: string,
   retrievedChunks: RetrievedChunk[],
+  evidenceLevel: EvidenceLevel,
   language: Language
 ): Promise<string | null> {
   const apiKey =
@@ -643,24 +672,34 @@ async function callGeminiApi(
               `[Source ${i + 1}: ${c.chunk.videoTitle} - ${c.chunk.title}]\n${c.chunk.content}`
           )
           .join("\n\n")
-      : "General Crochet Craft context from Part 1 to Part 4.";
+      : "No video transcript excerpts matched.";
 
-  const isMarathi = language === "mr";
+  const prompt = `You are an expert AI Craft Assistant for a course on knitting, crochet, and stitching.
 
-  const prompt = `You are an expert AI Craft Assistant for crochet, knitting, and stitching.
-LESSON CRAFT CONTEXT:
+LESSON TRANSCRIPT EVIDENCE:
 ${contextText}
+
+EVIDENCE LEVEL FOR THIS QUESTION: ${evidenceLevel}
+- SUFFICIENT: Transcripts directly answer the question.
+- PARTIAL: Transcripts provide partial details, but additional practical advice is needed.
+- NOT_FOUND: Question is in-scope for crafting/knitting/stitching, but not covered in the video lessons.
 
 USER QUESTION:
 ${question}
 
-CRITICAL INSTRUCTIONS:
-1. DO NOT MENTION INSTRUCTOR OR MASTERCLASS: Never mention "Suchita", "masterclass", "in this video", or "in the course". Present all facts and instructions directly as authoritative craft advice.
-2. SHORT, PRECISE & DIRECT: Jump directly into answering the question without any filler, greetings, or introductory preamble. Keep the entire response short and concise (1 to 3 direct sentences or 2-3 brief bullet points).
-3. COMPLETE SENTENCES: Always finish every sentence completely.
-4. IRRELEVANT QUESTIONS: If the user asks a question that is irrelevant or unrelated to crochet, knitting, stitching, needlework, yarn, or craft colors (such as makeup, cars, cooking recipes, coding, sports, movies, politics), state directly in one short sentence: "This question is irrelevant to crochet, knitting, and stitching. Please ask questions related to stitches, yarn, colors, or crafting."
-5. ZERO BOLD FORMATTING: NEVER use ** or __ around any word. Output clean, unbolded plain text only.
-6. LANGUAGE: If the user asks in Marathi (Devanagari script or Romanized Marathi), reply in natural, fluent Marathi (मराठी). If in English, reply in English. If in Hindi, reply in Hindi.
+STRICT INSTRUCTIONS:
+1. PRIMARY KNOWLEDGE SOURCE: Use the lesson transcripts as your primary knowledge source.
+2. ANSWERING BY EVIDENCE LEVEL:
+   - If SUFFICIENT: Provide a direct, beginner-friendly explanation based on the transcript. Preserve references to video parts and timestamps (e.g. "[Part 1 at 05:24]"). Do not copy entire paragraphs verbatim.
+   - If PARTIAL: First answer using the transcript facts and timestamps. Then, clearly distinguish any extra practical guidance by labelling it:
+     "Additional practical guidance:" (or "अतिरिक्त व्यावहारिक सल्ला:" in Marathi).
+   - If NOT_FOUND: Since this in-scope crafting question is not in the transcripts, answer clearly using general craft knowledge. Start with:
+     "While this specific topic is not explicitly covered in the video lessons, here is practical guidance:" (or "हा विशिष्ट विषय थेट व्हिडिओ धड्यांमध्ये समाविष्ट नसला तरी, हा उपयुक्त व्यावहारिक सल्ला आहे:" in Marathi).
+3. DO NOT INVENT: Never invent course content, fake video titles, or fake timestamps.
+4. NO INSTRUCTOR/MASTERCLASS NAMES: Never mention "Suchita", "masterclass", or "in this masterclass". Present all instructions directly as authoritative craft advice.
+5. SIMPLE & DIRECT: Explain answers in simple, beginner-friendly language without filler or preamble.
+6. ZERO BOLD FORMATTING: NEVER use ** or __ around any word. Output clean, unbolded plain text only.
+7. LANGUAGE: If the user asks in Marathi (Devanagari script or Romanized Marathi), reply in natural, fluent Marathi (मराठी). If in English, reply in English. If in Hindi, reply in Hindi.
 `;
 
   const candidateModels = [
@@ -711,6 +750,7 @@ CRITICAL INSTRUCTIONS:
 export async function generateRAGAnswer(
   question: string,
   retrievedChunks: RetrievedChunk[],
+  evidenceLevel: EvidenceLevel = "PARTIAL",
   language: Language = "mr",
   videoId?: string | null
 ): Promise<RAGAnswerResult> {
@@ -718,11 +758,11 @@ export async function generateRAGAnswer(
   let answer: string | null = null;
 
   // 1. Attempt Gemini LLM generation with broad knowledge + RAG context
-  answer = await callGeminiApi(question, retrievedChunks, effectiveLanguage);
+  answer = await callGeminiApi(question, retrievedChunks, evidenceLevel, effectiveLanguage);
 
   // 2. Fallback to local verified generator if offline or network error
   if (!answer) {
-    const localResult = generateLocalAnswer(question, retrievedChunks, effectiveLanguage, videoId);
+    const localResult = generateLocalAnswer(question, retrievedChunks, effectiveLanguage, evidenceLevel, videoId);
     answer = localResult.answer;
   }
 

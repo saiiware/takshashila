@@ -688,6 +688,7 @@ export async function classifyKnittingImage(
       edgeDensity: Number(features.edgeDensity.toFixed(3)),
       warmthScore: Number(features.warmthScore.toFixed(3)),
       specularRatio: Number(features.specularRatio.toFixed(3)),
+      tensionEstimate: "unknown",
       needleAngle: 35,
     };
     return {
@@ -725,6 +726,7 @@ export async function classifyKnittingImage(
       edgeDensity: Number(features.edgeDensity.toFixed(3)),
       warmthScore: Number(features.warmthScore.toFixed(3)),
       specularRatio: Number(features.specularRatio.toFixed(3)),
+      tensionEstimate: "unknown",
       needleAngle: 40,
     };
     return {

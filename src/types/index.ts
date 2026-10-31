@@ -57,9 +57,29 @@ export interface RAGSource {
   score: number;
 }
 
+
+export interface VisionMetrics {
+  edgeDensity: number;
+  warmthScore: number;
+  specularRatio: number;
+  tensionEstimate: "tight" | "loose" | "optimal" | "unknown";
+  needleAngle?: number;
+}
+
 export interface VisionAssessment {
-  category: "slip_knot" | "yarn" | "needle" | "general" | "heart" | "pentagon" | "hexagon" | "materials";
-  status: "correct" | "needs_improvement" | "unclear";
+  category:
+    | "slip_knot"
+    | "yarn"
+    | "needle"
+    | "general"
+    | "heart"
+    | "pentagon"
+    | "hexagon"
+    | "materials"
+    | "invalid_image";
+
+  status: "correct" | "needs_improvement" | "unclear" | "invalid";
+
   title: string;
   score: number;
   detected_items: string[];
@@ -68,7 +88,11 @@ export interface VisionAssessment {
   lesson_reference: string;
   confidence: number;
   sources?: RAGSource[];
+
+  isWrongImage?: boolean;
+  metrics?: VisionMetrics;
 }
+
 
 export interface ChatMessage {
   id: string;

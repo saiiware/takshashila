@@ -1,5 +1,6 @@
 import type { AskAIRequest, AskAIResponse, Language, VisionAssessment } from "@/types";
 import { queryRAG } from "@/rag";
+import { classifyKnittingImage } from "@/services/visionAnalysis";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -72,7 +73,7 @@ export async function assessKnittingPhoto(
       body: JSON.stringify({
         imageBase64,
         fileName,
-        prompt: prompt || "Please inspect this photo of my knitting work.",
+        prompt: prompt || "Analyze the craftwork in the uploaded photo.",
       }),
       signal: controller.signal,
     });
@@ -87,7 +88,7 @@ export async function assessKnittingPhoto(
   }
 
   // 2. Intelligent Client-Side Diagnostic Fallback (ensures 100% uptime even if python backend isn't started)
-  return fallbackClientVisionAnalysis(fileName || "", prompt || "");
+  return classifyKnittingImage(imageBase64, fileName || "", prompt || "");
 }
 
 function fallbackClientVisionAnalysis(fileName: string, prompt: string): VisionAssessment {

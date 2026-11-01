@@ -195,6 +195,16 @@ export function getStarterQuestions(videoId?: string | null): string[] {
 
   const cleanId = videoId.toLowerCase();
 
+  // Demo Video
+  if (cleanId.includes("demo")) {
+    return [
+      "How do I stitch the center panel using a crochet needle?",
+      "How do I determine which side is front vs back on my knitted piece?",
+      "How much extra thread should I leave when measuring the panel space?",
+      "How do I do the running stitch along the upper and bottom edges?",
+    ];
+  }
+
   // Part 1
   if (cleanId.includes("video-1") || cleanId.includes("part-1")) {
     return [

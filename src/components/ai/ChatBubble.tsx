@@ -41,20 +41,44 @@ export default function ChatBubble({ message, onSelectQuestion }: ChatBubbleProp
 
         {/* AI Computer Vision Assessment Card */}
         {assessment && (
-          <div className="mt-3 rounded-lg border border-workshop-200 bg-workshop-50/70 p-3.5 space-y-2.5 text-ink">
+          <div
+            className={`mt-3 rounded-lg border p-3.5 space-y-2.5 text-ink ${
+              assessment.isWrongImage || assessment.status === "invalid"
+                ? "border-red-300 bg-red-50/80"
+                : "border-workshop-200 bg-workshop-50/70"
+            }`}
+          >
             {/* Header: Title + Status + Score */}
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-workshop-200/80 pb-2">
+            <div
+              className={`flex flex-wrap items-center justify-between gap-2 border-b pb-2 ${
+                assessment.isWrongImage || assessment.status === "invalid"
+                  ? "border-red-200"
+                  : "border-workshop-200/80"
+              }`}
+            >
               <div className="flex items-center gap-2">
                 <span
                   className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold ${
-                    assessment.status === "correct"
+                    assessment.isWrongImage || assessment.status === "invalid"
+                      ? "bg-red-100 text-red-800 border border-red-300"
+                      : assessment.status === "correct"
                       ? "bg-emerald-100 text-emerald-800"
                       : "bg-amber-100 text-amber-800"
                   }`}
                 >
-                  {assessment.status === "correct" ? "Correct Technique" : "Correction Needed"}
+                  {assessment.isWrongImage || assessment.status === "invalid"
+                    ? "⚠️ Wrong / Non-Craft Photo"
+                    : assessment.status === "correct"
+                    ? "Correct Technique"
+                    : "Correction Needed"}
                 </span>
-                <span className="text-xs font-semibold text-workshop-700 bg-white px-2 py-0.5 rounded-full border border-workshop-200">
+                <span
+                  className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${
+                    assessment.isWrongImage || assessment.status === "invalid"
+                      ? "text-red-700 bg-white border-red-300"
+                      : "text-workshop-700 bg-white border-workshop-200"
+                  }`}
+                >
                   Score: {assessment.score} / 10
                 </span>
               </div>
@@ -64,7 +88,13 @@ export default function ChatBubble({ message, onSelectQuestion }: ChatBubbleProp
             </div>
 
             {/* Assessment Title */}
-            <h4 className="text-base font-bold text-ink">
+            <h4
+              className={`text-base font-bold ${
+                assessment.isWrongImage || assessment.status === "invalid"
+                  ? "text-red-900"
+                  : "text-ink"
+              }`}
+            >
               {assessment.title}
             </h4>
 
@@ -94,13 +124,17 @@ export default function ChatBubble({ message, onSelectQuestion }: ChatBubbleProp
             {/* Actionable Solution Grounded in Video Lessons */}
             <div
               className={`rounded-md p-2.5 border text-sm leading-relaxed ${
-                assessment.status === "correct"
+                assessment.isWrongImage || assessment.status === "invalid"
+                  ? "bg-red-100/70 border-red-300 text-red-950 font-medium"
+                  : assessment.status === "correct"
                   ? "bg-emerald-50/80 border-emerald-200 text-emerald-950"
                   : "bg-amber-50/90 border-amber-300 text-amber-950"
               }`}
             >
               <p className="font-bold text-xs uppercase tracking-wider mb-1">
-                Recommended Solution & Next Step:
+                {assessment.isWrongImage || assessment.status === "invalid"
+                  ? "How to Upload the Correct Photo:"
+                  : "Recommended Solution & Next Step:"}
               </p>
               <p>{assessment.solution}</p>
             </div>

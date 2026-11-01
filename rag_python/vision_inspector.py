@@ -68,7 +68,7 @@ Do not include any extra commentary outside JSON."""
 def _call_gemini_vision(
     image_bytes: bytes,
     mime_type: str = "image/png",
-    user_prompt: str = "Please inspect this photo of my knitting work.",
+    user_prompt: str = "Analyze the craftwork in the uploaded photo.",
 ) -> Optional[Dict[str, Any]]:
     api_key = _load_api_key()
     if not api_key:
@@ -136,6 +136,37 @@ def _fallback_classification(
 ) -> Dict[str, Any]:
     """Smart heuristic fallback if API call is unavailable or fails."""
     h_lower = hint.lower()
+
+    # 0. Check for unrelated / wrong subjects
+    unrelated_terms = [
+        "car", "automobile", "vehicle", "bike", "bicycle", "bus", "truck",
+        "dog", "puppy", "cat", "kitten", "pet", "animal", "bird", "fish",
+        "food", "pizza", "burger", "coffee", "tea", "cake", "meal", "apple", "banana",
+        "selfie", "face", "portrait", "person", "profile",
+        "laptop", "computer", "phone", "mobile", "screen", "keyboard",
+        "shoe", "shoes", "sneaker", "glasses", "building", "document", "meme"
+    ]
+    has_craft_kw = any(k in h_lower for k in ["stitch", "knit", "crochet", "yarn", "wool", "hook", "needle", "knot", "loop", "heart", "pentagon", "hexagon"])
+    if not has_craft_kw:
+        for term in unrelated_terms:
+            if re.search(rf"\b{term}\b", h_lower):
+                return {
+                    "category": "invalid_image",
+                    "status": "invalid",
+                    "isWrongImage": True,
+                    "title": f"Wrong Photo: {term.capitalize()} Detected ⚠️",
+                    "score": 0.0,
+                    "detected_items": [f"Unrelated subject: {term}", "No knitting or crochet craftwork found"],
+                    "feedback": (
+                        f"The uploaded photo depicts a {term}, which is not part of the knitting and crochet curriculum. "
+                        "The Computer Vision inspector is specifically trained to analyze stitches, yarn, hooks, and shapes."
+                    ),
+                    "solution": (
+                        "Please upload a photo of your craftwork: slip knot loop on the needle, crochet stitches, "
+                        "yarn ball, or crochet hooks/needles."
+                    ),
+                    "lesson_reference": "Curriculum Lessons 1 to 4",
+                }
 
     # 1. Slip knot variations
     if "tight" in h_lower:
@@ -282,7 +313,7 @@ def _fallback_classification(
 def inspect_image(
     image_bytes: bytes,
     mime_type: str = "image/png",
-    user_prompt: str = "Please inspect my knitting item.",
+    user_prompt: str = "Analyze the craftwork in the uploaded photo.",
 ) -> VisionAssessmentResult:
     """Main assessment function analyzing user's photo."""
     # 1. Try Gemini Vision API first

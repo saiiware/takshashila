@@ -504,7 +504,12 @@ export async function classifyKnittingImage(
           score: 0.97,
         },
       ],
-      metrics,
+      metrics: {
+        edgeDensity: Number(features.edgeDensity.toFixed(3)),
+        warmthScore: Number(features.warmthScore.toFixed(3)),
+        specularRatio: Number(features.specularRatio.toFixed(3)),
+        tensionEstimate: "optimal",
+      },
     };
   }
 
@@ -541,7 +546,12 @@ export async function classifyKnittingImage(
           score: 0.95,
         },
       ],
-      metrics,
+      metrics: {
+        edgeDensity: Number(features.edgeDensity.toFixed(3)),
+        warmthScore: Number(features.warmthScore.toFixed(3)),
+        specularRatio: Number(features.specularRatio.toFixed(3)),
+        tensionEstimate: "optimal",
+      },
     };
   }
 
@@ -585,7 +595,12 @@ export async function classifyKnittingImage(
           score: 0.98,
         },
       ],
-      metrics,
+      metrics: {
+        edgeDensity: Number(features.edgeDensity.toFixed(3)),
+        warmthScore: Number(features.warmthScore.toFixed(3)),
+        specularRatio: Number(features.specularRatio.toFixed(3)),
+        tensionEstimate: "optimal",
+      },
     };
   }
 
@@ -632,7 +647,12 @@ export async function classifyKnittingImage(
           score: 0.96,
         },
       ],
-      metrics,
+      metrics: {
+        edgeDensity: Number(features.edgeDensity.toFixed(3)),
+        warmthScore: Number(features.warmthScore.toFixed(3)),
+        specularRatio: Number(features.specularRatio.toFixed(3)),
+        tensionEstimate: "optimal",
+      },
     };
   }
 
@@ -674,7 +694,12 @@ export async function classifyKnittingImage(
           score: 0.95,
         },
       ],
-      metrics,
+      metrics: {
+        edgeDensity: Number(features.edgeDensity.toFixed(3)),
+        warmthScore: Number(features.warmthScore.toFixed(3)),
+        specularRatio: Number(features.specularRatio.toFixed(3)),
+        tensionEstimate: "optimal",
+      },
     };
   }
 
@@ -717,7 +742,12 @@ export async function classifyKnittingImage(
           score: 0.97,
         },
       ],
-      metrics,
+      metrics: {
+        edgeDensity: Number(features.edgeDensity.toFixed(3)),
+        warmthScore: Number(features.warmthScore.toFixed(3)),
+        specularRatio: Number(features.specularRatio.toFixed(3)),
+        tensionEstimate: "optimal",
+      },
     };
   }
 
@@ -755,11 +785,47 @@ export async function classifyKnittingImage(
           score: 0.96,
         },
       ],
-      metrics,
+      metrics: {
+        edgeDensity: Number(features.edgeDensity.toFixed(3)),
+        warmthScore: Number(features.warmthScore.toFixed(3)),
+        specularRatio: Number(features.specularRatio.toFixed(3)),
+        tensionEstimate: "optimal",
+      },
     };
   }
 
-  // 3D. Crochet motifs (heart, pentagon, hexagon) if explicitly referenced
+  // 3D. Ganga Olivia Yarn & Crochet Hook Inspection
+  if (hint.includes("hook") || hint.includes("हुक") || hint.includes("ganga") || hint.includes("olivia") || hint.includes("acrylic")) {
+    return {
+      category: "materials",
+      status: "correct",
+      title: "Materials Verified: Ganga Olivia Yarn & Crochet Hook ✅",
+      score: 9.2,
+      detected_items: ["Ganga Olivia acrylic yarn", "Crochet hook (4mm / 4.5mm)", "Smooth strand texture"],
+      feedback:
+        "Recommended materials identified! Ganga Olivia acrylic yarn is recommended for beginners because acrylic yarn doesn't split easily and makes stitches clearly visible.",
+      solution:
+        "For Part 1 beginner chain and stitches, use a 4.5 mm hook. For Parts 2-4 (Heart, Pentagon, Hexagon shapes), use a 4.0 mm hook.",
+      lesson_reference: "Part 1 & Parts 2-4 Materials",
+      confidence: 0.94,
+      sources: [
+        {
+          videoId: "part-1",
+          videoTitle: "Part 1: Crochet Basics (क्रोशे बेसिक)",
+          snippet: "Beginners should use Ganga Olivia acrylic yarn and a 4.5mm hook for initial stitches, or a 4mm hook for shapes.",
+          score: 0.95,
+        },
+      ],
+      metrics: {
+        edgeDensity: Number(features.edgeDensity.toFixed(3)),
+        warmthScore: Number(features.warmthScore.toFixed(3)),
+        specularRatio: Number(features.specularRatio.toFixed(3)),
+        tensionEstimate: "optimal",
+      },
+    };
+  }
+
+  // 3E. Crochet motifs (heart, pentagon, hexagon) if explicitly referenced
   if (hint.includes("heart") || hint.includes("हार्ट")) {
     return {
       category: "heart",

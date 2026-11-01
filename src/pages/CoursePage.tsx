@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useProgress } from "@/context/ProgressContext";
-import { MOCK_COURSE } from "@/data/mockData";
+import { DEMO_VIDEO, MOCK_COURSE } from "@/data/mockData";
 import Card from "@/components/common/Card";
 import Button from "@/components/common/Button";
 import ProgressBar from "@/components/common/ProgressBar";
@@ -128,10 +128,97 @@ export default function CoursePage() {
         </Card>
       )}
 
+      {/* Dedicated Section for Demo Video */}
+      <section className="space-y-4" aria-label="Course Demo Video">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-turmeric-500 text-white shadow-2xs font-bold text-sm">
+              ▶
+            </span>
+            <div>
+              <h2 className="text-xl sm:text-2xl font-extrabold text-ink">
+                Course Demo Video
+              </h2>
+              <p className="text-xs sm:text-sm text-ink/60">
+                Watch the introductory demonstration on panel stitching and running stitch techniques
+              </p>
+            </div>
+          </div>
+          <span className="rounded-full bg-turmeric-100 border border-turmeric-300 px-3 py-1 text-xs font-bold text-turmeric-800 shrink-0">
+            Preview Video
+          </span>
+        </div>
+
+        <Card className="border-workshop-200/90 bg-gradient-to-br from-workshop-50/70 via-white to-amber-50/30 p-4 sm:p-5 shadow-xs hover:border-workshop-400 transition-all">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-center">
+            {/* Left: Video Preview */}
+            <div className="md:col-span-5 relative aspect-video overflow-hidden rounded-xl bg-black border border-workshop-200 shadow-2xs group">
+              <video
+                src={DEMO_VIDEO.videoUrl}
+                preload="metadata"
+                className="h-full w-full object-cover opacity-90 group-hover:opacity-100 transition-opacity"
+              />
+              <div className="absolute inset-0 bg-black/35 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                <Link
+                  to={`/course/video/${DEMO_VIDEO.id}`}
+                  className="flex h-13 w-13 items-center justify-center rounded-full bg-workshop-600/90 text-white shadow-lg backdrop-blur-xs transition-transform group-hover:scale-110 hover:bg-workshop-600"
+                  aria-label="Play Course Demo Video"
+                >
+                  <svg className="h-6 w-6 translate-x-0.5 fill-current" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </Link>
+              </div>
+              <div className="absolute bottom-2 left-2 rounded-md bg-black/75 px-2 py-0.5 text-[11px] font-bold text-white backdrop-blur-xs">
+                ⏱ {DEMO_VIDEO.durationMinutes} min
+              </div>
+              <div className="absolute top-2 left-2 rounded-md bg-turmeric-500 text-white px-2 py-0.5 text-[10px] font-black uppercase tracking-wider shadow-2xs">
+                Demo
+              </div>
+            </div>
+
+            {/* Right: Info & CTA */}
+            <div className="md:col-span-7 space-y-2.5">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full bg-turmeric-100 text-turmeric-800 border border-turmeric-200 px-2.5 py-0.5 text-xs font-bold">
+                  Demo Lecture
+                </span>
+                <span className="rounded-full bg-paper text-ink/60 border border-line px-2.5 py-0.5 text-xs font-medium">
+                  Marathi Audio + Subtitles
+                </span>
+                <span className="rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 px-2.5 py-0.5 text-xs font-bold">
+                  All Learners
+                </span>
+              </div>
+
+              <div>
+                <h3 className="text-lg sm:text-xl font-bold text-ink">
+                  {DEMO_VIDEO.title}
+                </h3>
+                <p className="mt-1 text-xs sm:text-sm text-ink/70 leading-relaxed">
+                  {DEMO_VIDEO.description}
+                </p>
+              </div>
+
+              <div className="pt-2 flex flex-wrap items-center gap-3">
+                <Link to={`/course/video/${DEMO_VIDEO.id}`}>
+                  <Button className="shadow-xs text-xs sm:text-sm px-4 py-2 sm:px-5 sm:py-2.5">
+                    Watch Demo Video →
+                  </Button>
+                </Link>
+                <span className="text-xs text-ink/50">
+                  Interactive timestamps & AI assistant available
+                </span>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </section>
+
       {/* Curriculum Modules */}
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-extrabold text-ink">Course Curriculum</h2>
+          <h2 className="text-2xl font-extrabold text-ink">Course Lessons</h2>
           <p className="text-sm text-ink/60 mt-1">
             Follow the 4-part sequential course from foundation stitches to advanced geometric shapes.
           </p>

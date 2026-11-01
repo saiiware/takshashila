@@ -34,6 +34,7 @@ export interface Course {
   organization: string;
   language: Language;
   totalVideos: number;
+  demoVideo?: Video;
   videos: Video[];
 }
 

@@ -62,7 +62,7 @@ export default function AIAssistantPanel({
 
     // Flow 1: Photo uploaded -> Computer Vision Analysis
     if (image) {
-      const promptText = text.trim() || `Please inspect this photo of my work (${image.fileName})`;
+      const promptText = text.trim();
       const userMsg = makeMessage(
         "user",
         promptText,
@@ -76,7 +76,11 @@ export default function AIAssistantPanel({
       setStatusMessage("Analyzing photo with Computer Vision & Lesson knowledge…");
 
       try {
-        const assessment = await assessKnittingPhoto(image.dataUrl, image.fileName, promptText);
+        const assessment = await assessKnittingPhoto(
+          image.dataUrl,
+          image.fileName,
+          promptText || undefined
+        );
         const assistantMsg: ChatMessage = {
           id: `assistant-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
           role: "assistant",

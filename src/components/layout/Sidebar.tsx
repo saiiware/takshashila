@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useProgress } from "@/context/ProgressContext";
-import { MOCK_COURSE } from "@/data/mockData";
+import { DEMO_VIDEO, MOCK_COURSE } from "@/data/mockData";
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -219,6 +219,52 @@ export default function Sidebar({
 
               {areLessonsOpen && (
                 <div className="space-y-1 mt-1.5">
+                  {/* Distinct Demo Video Link */}
+                  {DEMO_VIDEO && (
+                    <div className="mb-2 pb-2 border-b border-workshop-100">
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-ink/40 px-2 mb-1">
+                        Preview & Demo
+                      </div>
+                      <Link
+                        to={`/course/video/${DEMO_VIDEO.id}`}
+                        onClick={handleLessonLinkClick}
+                        className={`group flex items-center justify-between rounded-card px-2.5 py-2 text-xs font-semibold transition-all ${
+                          location.pathname === `/course/video/${DEMO_VIDEO.id}`
+                            ? "bg-workshop-600 text-white shadow-xs"
+                            : "bg-turmeric-50/70 border border-turmeric-200/80 text-turmeric-900 hover:bg-turmeric-100/80"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          <span
+                            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[11px] font-bold ${
+                              location.pathname === `/course/video/${DEMO_VIDEO.id}`
+                                ? "bg-white/20 text-white"
+                                : "bg-turmeric-200 text-turmeric-900"
+                            }`}
+                          >
+                            ▶
+                          </span>
+                          <p className="truncate text-xs font-semibold">
+                            Course Demo Video
+                          </p>
+                        </div>
+                        <span
+                          className={`text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0 ${
+                            location.pathname === `/course/video/${DEMO_VIDEO.id}`
+                              ? "bg-white/20 text-white"
+                              : "bg-turmeric-200 text-turmeric-900"
+                          }`}
+                        >
+                          Demo
+                        </span>
+                      </Link>
+                    </div>
+                  )}
+
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-ink/40 px-2 mb-1">
+                    Lessons (1–4)
+                  </div>
+
                   {MOCK_COURSE.videos.map((vid) => {
                     const isVideoCompleted = Boolean(enrollment?.videoProgress[vid.id]?.completed);
                     const isVideoActive = location.pathname === `/course/video/${vid.id}`;

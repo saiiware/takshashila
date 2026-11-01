@@ -30,18 +30,30 @@ export default function CourseSummaryCard({
           <p className="mt-3 text-base text-ink/70">
             Videos completed: {completedCount} / {course.totalVideos}
           </p>
-          <div className="mt-5">
+          <div className="mt-5 flex flex-wrap items-center gap-3">
             <Link to={continueVideoId ? `/course/video/${continueVideoId}` : "/course"}>
               <Button>Continue learning</Button>
             </Link>
+            {course.demoVideo && (
+              <Link to={`/course/video/${course.demoVideo.id}`}>
+                <Button variant="ghost">Watch Demo Video</Button>
+              </Link>
+            )}
           </div>
         </>
       ) : (
         <>
           <p className="mb-5 text-base text-ink/70">{course.description}</p>
-          <Link to="/course">
-            <Button>View course</Button>
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link to="/course">
+              <Button>View course</Button>
+            </Link>
+            {course.demoVideo && (
+              <Link to={`/course/video/${course.demoVideo.id}`}>
+                <Button variant="ghost">Watch Demo Video</Button>
+              </Link>
+            )}
+          </div>
         </>
       )}
     </Card>

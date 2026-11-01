@@ -7,7 +7,28 @@ export const LANGUAGE_OPTIONS: LanguageOption[] = [
 
 export const COURSE_ID = "course-knitting-craft";
 
+export const DEMO_VIDEO: Video = {
+  id: `${COURSE_ID}-demo`,
+  courseId: COURSE_ID,
+  order: 0,
+  title: "Course Overview & Stitching Demo (डेमो व्हिडिओ)",
+  description:
+    "An introductory practical demonstration showing how to stitch panels using a crochet needle, identify front braided ridges vs. soft back pattern, and master running stitch edge techniques.",
+  durationMinutes: 3,
+  thumbnailColor: "#D97706",
+  videoUrl: "/videos/demo.mp4",
+};
+
 export const VIDEO_TIMESTAMPS: Record<string, Array<{ time: string; seconds: number; label: string }>> = {
+  [`${COURSE_ID}-demo`]: [
+    { time: "00:00", seconds: 0, label: "Title Card & Course Intro" },
+    { time: "00:04", seconds: 4, label: "Measuring & Cutting Thread" },
+    { time: "00:16", seconds: 16, label: "Identifying Front vs. Back" },
+    { time: "00:41", seconds: 41, label: "Weaving First Half with Crochet Hook" },
+    { time: "01:26", seconds: 86, label: "Running Stitch Along the Edge" },
+    { time: "02:38", seconds: 158, label: "Summary & Mirrored Edge" },
+    { time: "02:48", seconds: 168, label: "e-Saheli Enrollment Outro" },
+  ],
   [`${COURSE_ID}-video-1`]: [
     { time: "00:00", seconds: 0, label: "Intro & Materials (Ganga Olivia Acrylic Yarn, 4.5mm Hook)" },
     { time: "00:58", seconds: 58, label: "Holding Yarn in Left Hand & Starter Loop" },
@@ -55,7 +76,7 @@ const videos: Video[] = [
       "A beginner foundation tutorial introducing essential crochet tools, yarn handling techniques, and core stitches. In this lesson, you will learn: holding the yarn and 4.5mm hook, making the starter loop, Chain Stitch, Single Crochet, Half Double Crochet, the 7-step Double Crochet sequence, and beginner practice pacing.",
     durationMinutes: 7,
     thumbnailColor: "#1F4B4A",
-    videoUrl: "/videos/demo.mp4",
+    videoUrl: "https://youtu.be/EvR0-Jyx6x8",
   },
   {
     id: `${COURSE_ID}-video-2`,
@@ -66,7 +87,7 @@ const videos: Video[] = [
       "A step-by-step tutorial on crocheting a decorative heart motif using an adjustable ring. In this lesson, you will learn: creating an adjustable magic ring, working treble crochets for curved lobes, double crochet transitions, shaping the sharp bottom point, mirroring the symmetrical half, closing the center ring, and tapestry needle finishing.",
     durationMinutes: 5,
     thumbnailColor: "#B5602F",
-    videoUrl: "/videos/demo.mp4",
+    videoUrl: "https://youtu.be/qeNWb3TpX58",
   },
   {
     id: `${COURSE_ID}-video-3`,
@@ -77,7 +98,7 @@ const videos: Video[] = [
       "A geometric tutorial on constructing a balanced 5-sided pentagon across three structured rounds. In this lesson, you will learn: starting Round 1 with five groups of [3 DC, 2 Ch], applying the [1 DC, 2 Ch, 1 DC] corner expansion in Round 2, expanding outer stitches in Round 3, the crucial rule of not skipping the final DC, and invisible tail weaving.",
     durationMinutes: 9,
     thumbnailColor: "#4C7A5B",
-    videoUrl: "/videos/demo.mp4",
+    videoUrl: "https://youtu.be/W6S1X8PJgUk",
   },
   {
     id: `${COURSE_ID}-video-4`,
@@ -88,7 +109,7 @@ const videos: Video[] = [
       "A geometric lesson on crafting a symmetrical 6-sided hexagon motif with crisp corners and balanced edges. In this lesson, you will learn: building the six-corner foundation in Round 1, expanding corners with [1 DC, 2 Ch, 1 DC] in Round 2, Round 3 perimeter expansion, the crucial rule of working the increased DC before the closing slip stitch, and dual-thread finishing.",
     durationMinutes: 9,
     thumbnailColor: "#E3A324",
-    videoUrl: "/videos/demo.mp4",
+    videoUrl: "https://youtu.be/tzQwPmqoLK8",
   },
 ];
 
@@ -100,5 +121,6 @@ export const MOCK_COURSE: Course = {
   organization: "Crochet Craft Studio",
   language: "mr",
   totalVideos: videos.length,
+  demoVideo: DEMO_VIDEO,
   videos,
 };

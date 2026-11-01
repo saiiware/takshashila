@@ -164,9 +164,7 @@ export default function ChatInput({
     const trimmed = text.trim();
     if (!trimmed && !selectedImage) return;
 
-    const messageText =
-      trimmed ||
-      (selectedImage ? `Please inspect my knitting photo (${selectedImage.fileName})` : "");
+    const messageText = trimmed;
     onSend(messageText, selectedImage ?? undefined);
     setText("");
     setSelectedImage(null);
@@ -267,25 +265,22 @@ export default function ChatInput({
 
   return (
     <div className="flex flex-col gap-2">
-      {/* Selected Image Preview Bar */}
+      {/* Attached Image Chip (Clean preview without intrusive popup) */}
       {selectedImage && (
-        <div className="flex items-center justify-between rounded-card border border-workshop-300 bg-workshop-50 p-2 text-sm shadow-2xs animate-fade-in">
-          <div className="flex items-center gap-2 overflow-hidden">
-            <img
-              src={selectedImage.dataUrl}
-              alt="Work preview"
-              className="h-12 w-12 rounded-md object-cover border border-workshop-200"
-            />
-            <div className="min-w-0">
-              <p className="truncate font-medium text-ink text-xs">{selectedImage.fileName}</p>
-              <p className="text-[11px] text-workshop-700">Photo ready for AI Computer Vision check</p>
-            </div>
-          </div>
+        <div className="flex items-center gap-2 self-start rounded-lg border border-workshop-200 bg-workshop-50/80 px-2.5 py-1.5 shadow-2xs animate-fade-in">
+          <img
+            src={selectedImage.dataUrl}
+            alt="Attached photo"
+            className="h-8 w-8 rounded-md object-cover border border-workshop-200"
+          />
+          <span className="max-w-[180px] truncate text-xs font-semibold text-ink">
+            {selectedImage.fileName}
+          </span>
           <button
             type="button"
             onClick={handleRemoveImage}
             aria-label="Remove image"
-            className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-ink/60 border border-workshop-200 hover:text-clay-600 hover:bg-clay-50 transition-colors cursor-pointer"
+            className="flex h-5 w-5 items-center justify-center rounded-full text-ink/40 hover:bg-workshop-200 hover:text-ink transition-colors cursor-pointer"
           >
             ✕
           </button>

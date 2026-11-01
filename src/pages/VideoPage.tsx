@@ -1,19 +1,27 @@
 import { useEffect, useRef } from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
-import { MOCK_COURSE, VIDEO_TIMESTAMPS } from "@/data/mockData";
+import { DEMO_VIDEO, MOCK_COURSE, VIDEO_TIMESTAMPS } from "@/data/mockData";
 import { useProgress } from "@/context/ProgressContext";
 import Button from "@/components/common/Button";
 import Card from "@/components/common/Card";
 import AIAssistantPanel from "@/components/ai/AIAssistantPanel";
+
+function getYouTubeId(url: string): string | null {
+  if (!url) return null;
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+  return match ? match[1] : null;
+}
 
 export default function VideoPage() {
   const { videoId } = useParams<{ videoId: string }>();
   const navigate = useNavigate();
   const { enrollment, markCompleted, setLastAccessed } = useProgress();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  const videoIndex = MOCK_COURSE.videos.findIndex((v) => v.id === videoId);
-  const video = MOCK_COURSE.videos[videoIndex >= 0 ? videoIndex : 0];
+  const allVideos = [DEMO_VIDEO, ...MOCK_COURSE.videos];
+  const video = allVideos.find((v) => v.id === videoId) || MOCK_COURSE.videos[0];
+  const isDemoVideo = video.id === DEMO_VIDEO.id;
 
   useEffect(() => {
     if (video) setLastAccessed(video.id);
@@ -31,9 +39,21 @@ export default function VideoPage() {
   if (!video) return <Navigate to="/course" replace />;
 
   const isCompleted = Boolean(enrollment?.videoProgress[video.id]?.completed);
-  const previousVideo = MOCK_COURSE.videos[videoIndex - 1];
-  const nextVideo = MOCK_COURSE.videos[videoIndex + 1];
+
+  let previousVideo: typeof video | undefined;
+  let nextVideo: typeof video | undefined;
+
+  if (isDemoVideo) {
+    previousVideo = undefined;
+    nextVideo = MOCK_COURSE.videos[0];
+  } else {
+    const lessonIdx = MOCK_COURSE.videos.findIndex((v) => v.id === video.id);
+    previousVideo = lessonIdx > 0 ? MOCK_COURSE.videos[lessonIdx - 1] : DEMO_VIDEO;
+    nextVideo = lessonIdx >= 0 ? MOCK_COURSE.videos[lessonIdx + 1] : undefined;
+  }
+
   const activeTimestamps = VIDEO_TIMESTAMPS[video.id] || [];
+  const youtubeId = getYouTubeId(video.videoUrl);
 
   const handleMarkCompleted = async () => {
     await markCompleted(video.id);
@@ -42,7 +62,28 @@ export default function VideoPage() {
   const goToVideo = (id: string) => navigate(`/course/video/${id}`);
 
   const seekVideo = (seconds: number) => {
-    if (videoRef.current) {
+    if (youtubeId && iframeRef.current) {
+      try {
+        iframeRef.current.contentWindow?.postMessage(
+          JSON.stringify({
+            event: "command",
+            func: "seekTo",
+            args: [seconds, true],
+          }),
+          "*"
+        );
+        iframeRef.current.contentWindow?.postMessage(
+          JSON.stringify({
+            event: "command",
+            func: "playVideo",
+            args: [],
+          }),
+          "*"
+        );
+      } catch (e) {
+        console.warn("YouTube seek error:", e);
+      }
+    } else if (videoRef.current) {
       videoRef.current.currentTime = seconds;
       videoRef.current.muted = false;
       videoRef.current.volume = 1.0;
@@ -63,10 +104,23 @@ export default function VideoPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 xl:gap-8 items-start">
         {/* Left Column: Video Player, Title, and Chapter / Timestamp Navigation */}
         <div className="lg:col-span-7 xl:col-span-7 space-y-4">
-          {/* 1. Video Player */}
-          {video.videoUrl ? (
+          {/* 1. Video Player: YouTube IFrame or HTML5 Video */}
+          {youtubeId ? (
+            <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-black shadow-sm border border-workshop-200">
+              <iframe
+                key={video.id}
+                ref={iframeRef}
+                src={`https://www.youtube.com/embed/${youtubeId}?enablejsapi=1&rel=0&modestbranding=1`}
+                title={video.title}
+                className="h-full w-full border-0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            </div>
+          ) : video.videoUrl ? (
             <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-black shadow-sm border border-workshop-200">
               <video
+                key={video.id}
                 ref={videoRef}
                 controls
                 playsInline
@@ -91,7 +145,7 @@ export default function VideoPage() {
                   </svg>
                 </div>
                 <p className="mt-3 text-lg font-medium">
-                  {`Part ${video.order}`} of {MOCK_COURSE.totalVideos}
+                  {isDemoVideo ? "Course Demo" : `Part ${video.order} of ${MOCK_COURSE.totalVideos}`}
                 </p>
               </div>
             </div>
@@ -109,9 +163,15 @@ export default function VideoPage() {
                   <span>←</span> Courses
                 </Link>
                 <span className="text-ink/30">•</span>
-                <span className="rounded-full bg-workshop-100 px-2.5 py-0.5 text-xs font-bold text-workshop-800">
-                  {`Part ${video.order} of ${MOCK_COURSE.totalVideos}`}
-                </span>
+                {isDemoVideo ? (
+                  <span className="rounded-full bg-turmeric-100 px-2.5 py-0.5 text-xs font-bold text-turmeric-800 border border-turmeric-300">
+                    Course Demo Video
+                  </span>
+                ) : (
+                  <span className="rounded-full bg-workshop-100 px-2.5 py-0.5 text-xs font-bold text-workshop-800">
+                    {`Part ${video.order} of ${MOCK_COURSE.totalVideos}`}
+                  </span>
+                )}
                 <span className="rounded-full bg-paper px-2.5 py-0.5 text-xs font-medium text-ink/60 border border-line">
                   ⏱ {video.durationMinutes} min
                 </span>
@@ -129,7 +189,7 @@ export default function VideoPage() {
                   onClick={() => previousVideo && goToVideo(previousVideo.id)}
                   disabled={!previousVideo}
                   className="text-xs px-2.5 py-1.5"
-                  title="Previous lesson"
+                  title={previousVideo?.id === DEMO_VIDEO.id ? "Go to Demo Video" : "Previous lesson"}
                 >
                   ← Prev
                 </Button>

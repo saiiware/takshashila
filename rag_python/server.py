@@ -114,7 +114,7 @@ def vision_status():
 class VisionAssessRequest(BaseModel):
     imageBase64: str
     mimeType: Optional[str] = "image/png"
-    prompt: Optional[str] = "Please inspect my knitting item."
+    prompt: Optional[str] = "Analyze the craftwork in the uploaded photo."
     fileName: Optional[str] = None
 
 
